@@ -1,105 +1,64 @@
-# Beyond the Simplex Bottleneck: Gated Bilateral Cross-Attention and Geometric Discrepancy Regularization for Dual-Expert Sequential Recommendation
+# BiXRec: score routing vs. bilateral cross-attention for ID + text sequential recommendation
 
-This repository provides the official PyTorch implementation and reproducibility suite for the paper:
-**"Beyond the Simplex Bottleneck: Gated Bilateral Cross-Attention and Geometric Discrepancy Regularization for Dual-Expert Sequential Recommendation"** (Target: ACM TOIS / IEEE TKDE).
+Code for the paper *"Where Should Collaborative and Semantic Experts Meet? Score Routing versus Bilateral
+Cross-Attention in Sequential Recommendation"* (`paper/main.tex`).
 
----
+**Status: the v2 experiments have not been run yet.** Every number in the paper is generated from `runs/` by
+`bixrec/make_tables.py`; until the runs exist, tables show `--`. Red `[TODO]` notes in the paper mark sentences to
+write once results are in.
 
-## 📌 Overview
+## What is compared
 
-Sequential recommender systems predominantly rely on behavioral sequential transition dynamics (e.g., SASRec) or semantic textual representations (e.g., MiniLM encoders). While existing approaches attempt to fuse these streams via late score gating or static blends, this work reveals:
-1. **The Arithmetic Simplex Bottleneck:** Late sequence-level routing collapses to stationary 50/50 fusion due to an absence of item-aligned directional discriminability, creating statistical selection bias (Clark's bivariate extreme formula) and an information-theoretic classification barrier (Fano's inequality, $P_e \ge 53\%$).
-2. **BiX-GDR Architecture:** Rather than isolating representations until the final scoring layer, BiX-GDR introduces:
-   - **Bilateral Cross-Attention:** Deep cross-modal query contextualization between collaborative behavioral sequences and semantic text manifolds.
-   - **Adaptive Information Injection Gating:** Dynamic sigmoid gates $\mathbf{g}$ to prevent semantic noise injection on sparse trajectories.
-   - **Geometric Discrepancy Regularization (GDR):** Candidate-level divergence penalization ($-\lambda |S_c - S_s|$) to eliminate false-positive tail intrusions.
+All models share one transformer block, one loss (full-softmax cross-entropy at every position), one training
+budget and one early-stopping rule; only the fusion design changes.
 
-### Key Results
-- **MovieLens-1M (Full-Catalog $M=3{,}628$, Unsampled):** Reaches $\text{HR@10} = \mathbf{0.1403}$ ($847.3$ hits), achieving a **+172.4% relative gain over SASRec** ($0.0515$) and **+9.7% over calibrated Static PoE** ($p < 10^{-6}$), surpassing the post-hoc action Oracle ($825.8$ hits).
-- **Amazon Beauty (Full-Catalog $M=11{,}707$, Unsampled):** Reaches $\text{HR@10} = \mathbf{0.0382}$ ($377.0$ hits), securing **+131.7% over SASRec** and **+25.5% over Static PoE** ($p < 10^{-6}$), decisively reversing the failure of late routers.
-- **SOTA 100-Negative Benchmark:** Achieves $\text{HR@10} = \mathbf{0.3890}$ (BiX-GDR++), outperforming recent LLM-based recommenders like **LlamaRec ($0.2980$, +30.5%)** and **TALLRec ($0.2850$, +36.5%)**.
-- **Cold-Start Robustness ($L \le 5$):** Delivers $\text{HR@10} = \mathbf{0.3420}$ (**+175.8% gain over SASRec** at $0.1240$).
+| variant | description |
+|---|---|
+| `sasrec` | ID stream only |
+| `text` | frozen MiniLM text embeddings + MLP projection, no IDs |
+| `poe`, `poe50` | static product of the two separately trained experts (α tuned on validation / α = 0.5) |
+| `hybrid` | early fusion: item embedding = ID + text |
+| `dual_late` | two streams, no interaction, trained jointly through the fused score (control) |
+| `dual_late_pen` | + disagreement penalty |
+| `bix_nogate`, `bix_gate` | + bilateral cross-attention (without / with gate) |
+| `bix` | full model: cross-attention + gate + penalty |
+| `sasrec_lastpos`, `sasrec_bce`, `bix_lastpos` | protocol audit: loss on last position only / BCE with one negative |
 
----
+Protocol: 5-core, chronological leave-one-out, repeated user–item pairs removed, full-catalog ranking without
+negative sampling, ties counted against the target, 5 seeds, Holm-corrected paired tests.
 
-## 📁 Repository Structure
+## Run
 
-```text
-├── main.tex                    # Master LaTeX document for submission
-├── references.bib              # Complete bibliography
-├── sections/                   # Modular LaTeX paper sections
-│   ├── 01_introduction.tex
-│   ├── 02_related_work.tex
-│   ├── 03_system_architecture.tex
-│   ├── 04_empirical_evaluation.tex
-│   ├── 05_discussion_and_implications.tex
-│   ├── 06_threats_and_limitations.tex
-│   └── 07_conclusion.tex
-├── figures/                    # Vector and high-res publication figures
-├── models/                     # PyTorch model definitions
-│   ├── bix_gdr.py              # BiX-GDR & Gated Bilateral Cross-Attention
-│   ├── dual_expert_recsys.py   # Dual-stream baseline models
-│   ├── sasrec.py               # Collaborative self-attentive backbone
-│   ├── bert4rec.py             # BERT4Rec sequential baseline
-│   └── gru4rec.py              # GRU4Rec recurrent baseline
-├── data/                       # Dataset loaders and preprocessors
-│   ├── dataset_registry.py     # Unified registry across benchmarks
-│   ├── ml-1m/                  # MovieLens-1M dataset and embeddings
-│   ├── amazon_beauty/          # Amazon Beauty 5-core dataset
-│   └── yelp/                   # Yelp dataset
-├── results/                    # Sealed benchmark result logs (.json)
-├── config.py                   # Global hyperparameters and experiment configs
-├── train.py                    # Dual-expert backbone training
-├── train_bix_gdr.py            # End-to-end BiX-GDR training & evaluation
-├── evaluate.py                 # Multi-metric evaluation suite
-└── requirements.txt            # Environment dependencies
-```
+Easiest: open `run_experiments_colab.ipynb` in Google Colab with a GPU and run all cells (results are saved to
+Google Drive and the grid resumes where it stopped).
 
----
-
-## 🛠️ Environment Setup
+Manually:
 
 ```bash
-# Clone the repository
-git clone https://github.com/anonymous-recsys/bix-gdr.git
-cd bix-gdr
-
-# Create and activate environment
-python -m venv venv
-source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
+python -m bixrec.download --root data/raw --datasets ml1m beauty sports
+python -m bixrec.data ml1m   --raw data/raw/ml-1m --out data/ml1m
+python -m bixrec.data amazon --raw data/raw/reviews_Beauty_5.json.gz --meta data/raw/meta_Beauty.json.gz --out data/beauty
+python -m bixrec.data amazon --raw data/raw/reviews_Sports_and_Outdoors_5.json.gz \
+                             --meta data/raw/meta_Sports_and_Outdoors.json.gz --out data/sports
+for d in ml1m beauty sports; do python -m bixrec.embed --data data/$d; done
+
+python -m bixrec.run_all --data_root data --runs runs          # core -> ablation -> audit, resumable
+python -m bixrec.make_tables --runs runs --data_root data --out paper/generated
+cd paper && latexmk -pdf main.tex
 ```
 
----
+One run: `python -m bixrec.train --data data/ml1m --variant bix --seed 42 --out runs`.
+Each run saves `metrics.json`, per-user ranks (`ranks_*.npy`) and the checkpoint.
 
-## 🚀 Reproduction & Training
+Tests: `python -m pytest tests -q` (causality, padding, no split leakage, masking can only help, statistics).
 
-### 1. Train and Evaluate BiX-GDR
-```bash
-# Train BiX-GDR across 3 seeds on MovieLens-1M
-python train_bix_gdr.py --dataset ml1m --seeds 42 123 2024 --epochs 8
+## Layout
 
-# Train BiX-GDR on Amazon Beauty
-python train_bix_gdr.py --dataset amazon_beauty --seeds 42 123 2024 --epochs 8
 ```
-
-### 2. Run Comprehensive Full-Catalog Evaluation
-```bash
-# Evaluates all models under unsampled full-catalog protocol
-python evaluate.py --dataset ml1m --eval_mode full_catalog
-```
-
----
-
-## 📊 Citation
-
-```bibtex
-@article{anonymous2026bixgdr,
-  title     = {Beyond the Simplex Bottleneck: Gated Bilateral Cross-Attention and Geometric Discrepancy Regularization for Dual-Expert Sequential Recommendation},
-  author    = {Anonymous Author(s)},
-  journal   = {ACM Transactions on Information Systems (TOIS)},
-  year      = {2026}
-}
+bixrec/      data prep, text embedding, models, training/eval, statistics, table generation
+paper/       main.tex, references.bib, generated/tables.tex (auto-generated)
+tests/       sanity tests
+legacy/      v1 exploratory code, kept for transparency; not used for any v2 number (see legacy/README.md)
+data/        small raw samples from v1 (Amazon/Yelp/KuaiRec); ML-1M is downloaded by bixrec.download
 ```
