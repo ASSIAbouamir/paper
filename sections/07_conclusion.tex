@@ -1,0 +1,16 @@
+% ==============================================================================
+% SECTION 7: CONCLUSION & DESIGN PRINCIPLES
+% ==============================================================================
+
+\section{Conclusion \& Design Principles}
+\label{sec:conclusion}
+
+This paper investigated why adaptive routing architectures struggle against stationary fusion in dual-expert sequential recommendation, establishing the governing empirical realities and boundary conditions of multi-expert fusion:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Why Sequence-Level Routing Fails Against Static Fusion:} Across both compact ($d=64$, $\text{HR@10} = 0.0515$) and high-capacity backbone pairs ($765.2$ hits, $\text{HR@10} \approx 0.127$), sequence-level scalar routing fails to outperform stationary fusion. Summary uncertainty features lack candidate-level directional resolution, inducing collateral false-positive tail intrusions on the consensus majority. Rather than strictly collapsing to identical uniform weights, learned routers fluctuate within the sampling noise of static fusion without extracting significant specialist signal.
+    \item \textbf{The Disagreement Penalty Principle and Its Boundary Conditions:} In compact consensus-dominant regimes ($89.6\% H$), candidate-level geometric arbitration (CC-PoE) recovers modest headroom over Static Logit PoE ($0.0725 \to 0.0765$, $+24$ net hits on canonical Seed 42, $+18.2$ mean hits across 5 seeds). However, our 5-pair high-capacity benchmark transparently demonstrates that the fixed disagreement penalty does not transfer to stronger backbone pairs (mean $\Delta = -17.2$ hits across 5 retrained pairs), because isolated specialist opportunities are scarce ($n_{01} \approx 42.0$) while collaborative hits put at risk are substantial ($n_{10} \approx 201.6$).
+    \item \textbf{Sparse E-Commerce \& Non-Parametric Dominance:} On Amazon Beauty, our post-hoc diagnostic audit demonstrates that unlearned non-parametric co-occurrence combined with content centroids (\texttt{Item-kNN + Sim}, $723.0$ hits) vastly outperforms untuned neural sequence Transformers ($168.7$ hits). Neither CC-PoE ($283.3$ hits) nor Soft MoE ($206.0$ hits) improves over simple fusion, illustrating the sensitivity of off-the-shelf neural sequence models on ultra-sparse catalogs without domain-specific hyperparameter search.
+    \item \textbf{Persistent Latent Headroom as an Open Challenge:} While discrete oracle headroom exists, closing this gap without incurring collateral losses on strong collaborative predictions remains an open problem that requires item-aware confidence estimation rather than global divergence penalties.
+\end{enumerate}
+
+Our investigation reframes multi-expert fusion from an unconstrained neural routing problem to a rigorous examination of stationary baselines, establishing clear boundary conditions for when and why adaptive routing can---or cannot---improve over simple fusion.

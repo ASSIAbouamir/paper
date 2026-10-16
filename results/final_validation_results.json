@@ -1,0 +1,150 @@
+{
+  "framework": "Selective Evidence Routing for Sequential Recommendation",
+  "dataset": "MovieLens-1M",
+  "seeds": [
+    42,
+    123,
+    2024,
+    7,
+    99
+  ],
+  "pillar_1_multiseed_table": [
+    {
+      "Model": "SASRec (Collaborative Expert)",
+      "HR@10": "0.0227",
+      "NDCG@10": "0.0117",
+      "NDCG@10 Oracle Gap (%)": "61.01%"
+    },
+    {
+      "Model": "Semantic Expert (MiniLM Sequential)",
+      "HR@10": "0.0356",
+      "NDCG@10": "0.0171",
+      "NDCG@10 Oracle Gap (%)": "43.19%"
+    },
+    {
+      "Model": "Static Fusion (50/50 Fixed Blend)",
+      "HR@10": "0.0397",
+      "NDCG@10": "0.0183",
+      "NDCG@10 Oracle Gap (%)": "39.42%"
+    },
+    {
+      "Model": "Length Gate (Audited: L_u / 50)",
+      "HR@10": "0.0290",
+      "NDCG@10": "0.0142",
+      "NDCG@10 Oracle Gap (%)": "52.79%"
+    },
+    {
+      "Model": "Scalar Uncertainty Baseline (Prior)",
+      "HR@10": "0.0399",
+      "NDCG@10": "0.0183",
+      "NDCG@10 Oracle Gap (%)": "39.16%"
+    },
+    {
+      "Model": "Selective Evidence Router (5 Seeds Mean +- Std)",
+      "HR@10": "0.0390 +- 0.0006",
+      "NDCG@10": "0.0181 +- 0.0001",
+      "NDCG@10 Oracle Gap (%)": "40.05%"
+    },
+    {
+      "Model": "Oracle Router (Empirical Upper Bound)",
+      "HR@10": "0.0605",
+      "NDCG@10": "0.0301",
+      "NDCG@10 Oracle Gap (%)": "0.00%"
+    }
+  ],
+  "pillar_2_popularity_and_concentration": [
+    {
+      "History Length L": 1,
+      "Model": "SASRec",
+      "Catalog Coverage@10 (%)": 0.5,
+      "Gini Concentration": 0.997,
+      "Mean Item Popularity": 2423.3
+    },
+    {
+      "History Length L": 1,
+      "Model": "Semantic",
+      "Catalog Coverage@10 (%)": 2.65,
+      "Gini Concentration": 0.9944,
+      "Mean Item Popularity": 1782.2
+    },
+    {
+      "History Length L": 1,
+      "Model": "Static Fusion",
+      "Catalog Coverage@10 (%)": 1.3,
+      "Gini Concentration": 0.9961,
+      "Mean Item Popularity": 2216.0
+    },
+    {
+      "History Length L": 1,
+      "Model": "Selective Router",
+      "Catalog Coverage@10 (%)": 1.93,
+      "Gini Concentration": 0.9953,
+      "Mean Item Popularity": 2022.1
+    },
+    {
+      "History Length L": 5,
+      "Model": "SASRec",
+      "Catalog Coverage@10 (%)": 0.55,
+      "Gini Concentration": 0.9969,
+      "Mean Item Popularity": 2424.7
+    },
+    {
+      "History Length L": 5,
+      "Model": "Semantic",
+      "Catalog Coverage@10 (%)": 3.64,
+      "Gini Concentration": 0.9927,
+      "Mean Item Popularity": 1712.1
+    },
+    {
+      "History Length L": 5,
+      "Model": "Static Fusion",
+      "Catalog Coverage@10 (%)": 1.9,
+      "Gini Concentration": 0.9954,
+      "Mean Item Popularity": 2198.1
+    },
+    {
+      "History Length L": 5,
+      "Model": "Selective Router",
+      "Catalog Coverage@10 (%)": 2.12,
+      "Gini Concentration": 0.9953,
+      "Mean Item Popularity": 2186.9
+    },
+    {
+      "History Length L": 20,
+      "Model": "SASRec",
+      "Catalog Coverage@10 (%)": 1.05,
+      "Gini Concentration": 0.9968,
+      "Mean Item Popularity": 2412.0
+    },
+    {
+      "History Length L": 20,
+      "Model": "Semantic",
+      "Catalog Coverage@10 (%)": 7.75,
+      "Gini Concentration": 0.9817,
+      "Mean Item Popularity": 1361.3
+    },
+    {
+      "History Length L": 20,
+      "Model": "Static Fusion",
+      "Catalog Coverage@10 (%)": 4.38,
+      "Gini Concentration": 0.991,
+      "Mean Item Popularity": 2040.5
+    },
+    {
+      "History Length L": 20,
+      "Model": "Selective Router",
+      "Catalog Coverage@10 (%)": 5.4,
+      "Gini Concentration": 0.9894,
+      "Mean Item Popularity": 1967.6
+    }
+  ],
+  "pillar_3_drift_detection_benchmark": {
+    "Test Cohort Size": 1000,
+    "Class 0 (Normal Users)": 500,
+    "Class 1 (Drifted Users)": 500,
+    "AUROC": 0.7597,
+    "AUPRC": 0.7119,
+    "Best F1 Score": 0.7591,
+    "Optimal Decision Threshold tau_U": 0.00185
+  }
+}

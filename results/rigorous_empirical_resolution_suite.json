@@ -1,0 +1,76 @@
+{
+  "oracle_selection_bias_control": {
+    "hr_empirical_c": 0.0515071215634316,
+    "hr_empirical_s": 0.04488241139450149,
+    "hr_empirical_h": 0.06409407088439881,
+    "hr_oracle_empirical": 0.09307717787346803,
+    "null_model_oracle_gain_pct": 58.27390180878553,
+    "true_specialization_headroom_pct": -13.054263565891482
+  },
+  "two_stage_cascade_benchmark": {
+    "Cascade-K=20": {
+      "K": 20,
+      "Semantic_Rerank_HR10": 0.06425968863862205,
+      "PoE_Rerank_HR10": 0.06558463067240808,
+      "CC_PoE_Rerank_HR10": 0.06492215965551507,
+      "PoE_Hits": 396,
+      "CC_PoE_Hits": 392
+    },
+    "Cascade-K=50": {
+      "K": 50,
+      "Semantic_Rerank_HR10": 0.07121563431599867,
+      "PoE_Rerank_HR10": 0.07320304736667771,
+      "CC_PoE_Rerank_HR10": 0.07369990062934746,
+      "PoE_Hits": 442,
+      "CC_PoE_Hits": 445
+    },
+    "Cascade-K=100": {
+      "K": 100,
+      "Semantic_Rerank_HR10": 0.06674395495197086,
+      "PoE_Rerank_HR10": 0.07369990062934746,
+      "CC_PoE_Rerank_HR10": 0.07369990062934746,
+      "PoE_Hits": 445,
+      "CC_PoE_Hits": 445
+    },
+    "Cascade-K=200": {
+      "K": 200,
+      "Semantic_Rerank_HR10": 0.05995362702881749,
+      "PoE_Rerank_HR10": 0.07320304736667771,
+      "CC_PoE_Rerank_HR10": 0.07452798940046373,
+      "PoE_Hits": 442,
+      "CC_PoE_Hits": 450
+    }
+  },
+  "multiseed_backbone_retraining": [
+    {
+      "backbone_seed": 42,
+      "sasrec_hr10": 0.12417218543046357,
+      "semantic_hr10": 0.1119205298013245,
+      "static_poe_hr10": 0.123841059602649,
+      "static_poe_hits": 748,
+      "disagreement_poe_hr10": 0.12251655629139073,
+      "disagreement_poe_hits": 740,
+      "delta_hits": -8
+    },
+    {
+      "backbone_seed": 123,
+      "sasrec_hr10": 0.1304635761589404,
+      "semantic_hr10": 0.10562913907284768,
+      "static_poe_hr10": 0.12649006622516556,
+      "static_poe_hits": 764,
+      "disagreement_poe_hr10": 0.12632450331125827,
+      "disagreement_poe_hits": 763,
+      "delta_hits": -1
+    },
+    {
+      "backbone_seed": 2024,
+      "sasrec_hr10": 0.13228476821192053,
+      "semantic_hr10": 0.11059602649006622,
+      "static_poe_hr10": 0.1271523178807947,
+      "static_poe_hits": 768,
+      "disagreement_poe_hr10": 0.123841059602649,
+      "disagreement_poe_hits": 748,
+      "delta_hits": -20
+    }
+  ]
+}

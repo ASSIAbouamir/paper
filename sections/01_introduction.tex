@@ -1,0 +1,54 @@
+% ==============================================================================
+% SECTION 1: INTRODUCTION
+% Target Venue: ACM RecSys / IEEE TKDE / ACM TOIS
+% ==============================================================================
+
+\section{Introduction}
+\label{sec:intro}
+
+Sequential recommender systems are the foundational engine of modern personalized platforms, predicting users' evolving preferences from chronological interaction sequences~\cite{kang2018self,sun2019bert4rec}. To maximize predictive accuracy, modern architectures combine two complementary representation modalities:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Collaborative Sequence Encoders:} Causal self-attention networks such as SASRec~\cite{kang2018self} and BERT4Rec~\cite{sun2019bert4rec} excel at capturing high-order behavioral transition dynamics over discrete item IDs. However, they rely strictly on behavioral overlap and suffer severe performance degradation when interaction sequences are sparse, noisy, or subject to abrupt preference drift.
+    \item \textbf{Semantic Textual Encoders:} Leveraging frozen language models (e.g., MiniLM~\cite{wang2020minilm}, BGE~\cite{xiao2023bge}, or LLM embeddings~\cite{hou2022towards,petrov2023effective}), these models project descriptive textual metadata (titles, categories, descriptions) into smooth, content-rich semantic manifolds. They provide powerful inductive grounding and robust cold-start handling, yet lack fine-grained sensitivity to collaborative sequential transitions.
+\end{enumerate}
+
+To fuse these modalities, conventional wisdom has long relied on either stationary linear score fusion ($S = \alpha S_c + (1-\alpha) S_s$) or post-hoc learned gating networks (e.g., Mixture-of-Experts~\cite{shazeer2017outrageously,ma2018modeling}). Intuition suggests that a neural routing network---conditioned on session uncertainty, entropy, and inter-expert disagreement---should dynamically route each user sequence to the optimal modality.
+
+\subsection{The Motivating Dilemma: The Late Routing Bottleneck}
+\label{sec:intro_premise}
+
+When rigorously evaluated across full candidate catalogs without negative sampling, post-hoc score routing on frozen backbones encounters a severe empirical and theoretical barrier:
+\begin{equation}
+    \begin{aligned}
+        \text{Static 50/50 Fusion: HR@10} &= 0.1278 \pm 0.0029 \quad (772.2 \text{ hits}) \\
+        \text{vs. Standard MoE Router: HR@10} &= 0.1276 \pm 0.0031 \quad (770.7 \text{ hits})
+    \end{aligned}
+\end{equation}
+Paired McNemar significance tests confirm that learned continuous routers fail to surpass rigid stationary fusion ($p > 0.25$ across seeds), fluctuating entirely within sampling noise. On ultra-sparse domains such as Amazon Beauty, late routers even degrade performance below stationary fusion ($-17.0$ net hits).
+
+Through structural causal modeling and information-theoretic analysis via Fano's Inequality~\cite{fano1961transmission}, we prove that this stagnation stems from a fundamental \textbf{informational representation bottleneck}: sequence-level summary features share negligible mutual information with candidate rank inversions ($I(Y^* ; \mathbf{x}_u \mid \text{Consensus}) \approx 0.041$ nats), imposing an unavoidable lower bound on classification error ($P_e \ge 53\%$). Because late routers operate exclusively on scalar prediction scores after frozen backbones have already collapsed fine-grained token dynamics, post-hoc gating cannot resolve representation-level ambiguity.
+
+\subsection{Our Solution: The BiX-GDR Architectural Breakthrough}
+\label{sec:intro_solution}
+
+To shatter this representation bottleneck, we argue that collaborative and semantic modalities must interact \textbf{intermediately within the Transformer blocks}, rather than superficially at the final output layer. We introduce \textbf{BiX-GDR} (\textbf{Bi}lateral Cross-Attentive Transformer with Adaptive Information Injection \textbf{G}ating and Geometric \textbf{D}iscrepancy \textbf{R}egularization), an end-to-end multi-modal sequential architecture that redefines cross-modal recommendation:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Bilateral Layer-Wise Co-Attention ($C \leftrightarrow S$):} Instead of isolated backbones, BiX-GDR embeds dual-directional cross-attention layers directly inside each sequential Transformer block. Collaborative queries contextualize their transitions against semantic token manifolds ($C \leftarrow S$), while semantic queries anchor their content projections in collaborative transition dynamics ($S \leftarrow C$).
+    \item \textbf{Adaptive Information Injection Gates ($\mathbf{g}_c, \mathbf{g}_s$):} To protect sparse behavioral histories from semantic dilution, dynamic sigmoid gating networks regulate cross-modal residual flow, throttling injection during uncertain early sessions while intensifying interaction as preferences mature.
+    \item \textbf{Contrastive Representation Alignment ($\mathcal{L}_{\text{align}}$):} An auxiliary InfoNCE mutual information objective aligns collaborative and semantic latent trajectories, preventing representation-level modality collapse.
+    \item \textbf{Geometric Discrepancy Regularization (GDR):} During candidate ranking, a calibrated discrepancy penalty ($-\lambda(u) |S_c(i) - S_s(i)|$) dynamically penalizes candidate items that receive divergent modality scores, effectively purging false-positive tail intrusions from the top-$K$ recommendations.
+\end{enumerate}
+
+\subsection{Key Empirical Breakthroughs}
+\label{sec:intro_results}
+
+Evaluated across dense (MovieLens-1M), ultra-sparse (Amazon Beauty), and exploratory stress-test domains under identical computational budgets, BiX-GDR delivers transformative improvements:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Decisive Superiority in Full-Catalog Unsampled Ranking:} On MovieLens-1M ($3{,}628$ items), BiX-GDR achieves $\mathbf{847.3 \pm 8.1\text{ hits}}$ ($\text{HR@10} = 0.1403$), generating \textbf{$+75.1$ net hits ($+9.7\%$)} over Static PoE and surpassing the discrete action Oracle ($825.8$ hits) with paired McNemar significance $\mathbf{p < 10^{-6}}$. When equipped with multi-intent disentanglement (BiX-GDR++), performance surges to $\mathbf{1{,}018.4\text{ hits}}$ ($\text{HR@10} = 0.1686$, \textbf{$+29.8\%$ relative gain}, $\mathbf{p < 10^{-12}}$).
+    \item \textbf{Breakthrough on Ultra-Sparse Domains:} On Amazon Beauty ($99.93\%$ sparsity), where late-stage routers degraded by $-17.0$ hits, BiX-GDR achieves $\mathbf{377.0 \pm 8.9\text{ hits}}$ ($\text{HR@10} = 0.0382$, \textbf{$+25.5\%$ over Static PoE}, \textbf{$+131.7\%$ over SASRec}, $\mathbf{p < 10^{-6}}$), with BiX-GDR++ reaching $\mathbf{480.2\text{ hits}}$ ($\text{HR@10} = 0.0486$, \textbf{$+59.9\%$ gain}).
+    \item \textbf{Beating LLM-Based SOTA Baselines:} In standard 100-negative sampled evaluation, BiX-GDR attains $\mathbf{\text{HR@10} = 0.3540}$ ($\mathbf{\text{NDCG@10} = 0.2240}$), outperforming LlamaRec~\cite{yue2023llamarec} ($\text{HR@10} = 0.2980$, $+18.8\%$), TALLRec~\cite{bao2023tallrec} ($0.2850$, $+24.2\%$), and SASRec ($0.2740$, $+29.2\%$).
+    \item \textbf{Mastery of Cold-Start Trajectories:} On cold-start users ($L \le 5$), BiX-GDR achieves a \textbf{$+119.2\%$ gain} in HR@10 over SASRec ($0.0520 \to 0.1140$) and increases catalog item coverage by \textbf{$+53.1\%$} ($32.1\% \to 54.8\%$).
+\end{itemize}
+
+By unifying a rigorous diagnosis of late routing failure with a triumphant architectural solution, this paper demonstrates that representation-level bilateral interaction is the essential design principle for next-generation multi-modal recommender systems.

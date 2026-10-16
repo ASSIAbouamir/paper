@@ -1,0 +1,339 @@
+{
+  "framework": "Selective Evidence Routing (CC-PoE vs Static PoE)",
+  "evaluation_protocol": "Chronological LOO, Sealed Out-of-Sample Test Split, Strict Paper Backbone Alignment, Seed 42 Contingency",
+  "datasets": {
+    "MovieLens-1M": {
+      "dataset": "MovieLens-1M",
+      "domain": "Cinematic Entertainment (Dense)",
+      "protocol_notes": "Backbones fig\u00e9s sur checkpoint canonique Seed 42. Le +/- sur CC-PoE (+/-4.3) refl\u00e8te l'initialisation stochastique du routeur sur 5 seeds [462, 457, 456, 456, 450] (Table XIV). Static PoE std est strictement +/-0.0 car il s'agit d'un op\u00e9rateur d\u00e9terministe \u00e0 0 param\u00e8tre sur repr\u00e9sentations fig\u00e9es.",
+      "active_users": 6038,
+      "candidate_items": 3628,
+      "operating_regime": "Consensus-Dominant (H >= 75%)",
+      "models": {
+        "SASRec": {
+          "hits_seed_42": 311,
+          "mean_hits": 311.0,
+          "HR@10_mean": 0.0515,
+          "note": "Seed 42 canonique (Table I / Table II)"
+        },
+        "SemanticExpert": {
+          "hits_seed_42": 271,
+          "mean_hits": 271.0,
+          "HR@10_mean": 0.0449,
+          "note": "Sentence-Transformers all-MiniLM-L6-v2 avec causal attention"
+        },
+        "Static_50_50_Blend": {
+          "hits_seed_42": 387,
+          "mean_hits": 387.0,
+          "HR@10_mean": 0.0641,
+          "note": "M\u00e9lange probabiliste lin\u00e9aire 0.5 Pc + 0.5 Ps"
+        },
+        "Static_50_50_PoE": {
+          "hits_seed_42": 438,
+          "mean_hits": 438.0,
+          "std_hits": 0.0,
+          "HR@10_mean": 0.07254,
+          "HR@10_std": 0.0,
+          "note": "Product-of-Experts logit sum: 0.5 log Pc + 0.5 log Ps"
+        },
+        "CC_PoE_Router": {
+          "hits_seed_42": 462,
+          "hits_5seed_list": [
+            462,
+            457,
+            456,
+            456,
+            450
+          ],
+          "mean_hits": 456.2,
+          "std_5seed": 4.32,
+          "HR@10_mean": 0.07555,
+          "HR@10_std": 0.00072,
+          "note": "Moyenne 5 seeds (Table XIV); Seed 42 = 462 hits (+24 hits nets, Table XV)"
+        },
+        "Oracle": {
+          "hits_seed_42": 562,
+          "mean_hits": 562.0,
+          "HR@10_mean": 0.09308,
+          "note": "Oracle 3 actions Table V (H = 0.5 Pc + 0.5 Ps)"
+        }
+      },
+      "net_hits_gained_over_poe": {
+        "net_hits_5seeds": 18.2,
+        "net_hits_seed_42": 24.0,
+        "relative_gain_pct": 4.16
+      },
+      "mcnemar_contingency_seed_42": {
+        "comparator": "Static 50/50 PoE",
+        "test_type": "Two-sided Exact Binomial McNemar Test",
+        "n00": 5536,
+        "n01": 64,
+        "n10": 40,
+        "n11": 398,
+        "total": 6038,
+        "raw_exact_binomial_p": 0.0236,
+        "holm_adjusted_p": 0.0709
+      },
+      "oracle_actions": {
+        "rule": "Table V Reciprocal Rank Tie-Breaker (H = 0.5 Pc + 0.5 Ps)",
+        "C_pct": 5.9,
+        "S_pct": 4.5,
+        "H_pct": 89.6,
+        "counts": {
+          "C": 359,
+          "S": 269,
+          "H": 5410,
+          "Total": 6038
+        }
+      }
+    },
+    "Amazon Beauty (2014 5-core)": {
+      "dataset": "Amazon Beauty (2014 5-core)",
+      "domain": "E-commerce / Personal Care (Sparse)",
+      "protocol_notes": "Backbones r\u00e9entra\u00een\u00e9s sur 3 seeds [42, 123, 2024]; le +/- refl\u00e8te le r\u00e9entra\u00eenement stochastique des backbones. Jeu 5-core nettoy\u00e9 (milistu/Amazon_Beauty_2014) de 9 880 utilisateurs, 11 707 items, 81 767 interactions (L >= 5).",
+      "active_users": 9880,
+      "candidate_items": 11707,
+      "expert_orthogonality_seed_42": {
+        "n11": 9,
+        "n10": 110,
+        "n01": 105,
+        "n00": 9656,
+        "total": 9880,
+        "phi": 0.06626,
+        "interpretation": "235 hits contre 224 pour l'union des deux experts (11 sauvetages), refl\u00e9tant la quasi-orthogonalit\u00e9 des hits sp\u00e9cialistes (phi = 0.066)."
+      },
+      "models": {
+        "SASRec": {
+          "hits_seed_42": 119,
+          "hits_seed_123": 112,
+          "hits_seed_2024": 117,
+          "mean_hits": 116.0,
+          "std_hits": 3.61,
+          "HR@10_mean": 0.01174,
+          "HR@10_std": 0.00037
+        },
+        "SemanticExpert": {
+          "hits_seed_42": 114,
+          "hits_seed_123": 125,
+          "hits_seed_2024": 126,
+          "mean_hits": 121.67,
+          "std_hits": 6.66,
+          "HR@10_mean": 0.01231,
+          "HR@10_std": 0.00067
+        },
+        "Static_50_50_Blend": {
+          "hits_seed_42": 173,
+          "hits_seed_123": 170,
+          "hits_seed_2024": 159,
+          "mean_hits": 167.33,
+          "std_hits": 7.37,
+          "HR@10_mean": 0.01694,
+          "HR@10_std": 0.00075
+        },
+        "Static_50_50_PoE": {
+          "hits_seed_42": 235,
+          "hits_seed_123": 228,
+          "hits_seed_2024": 240,
+          "mean_hits": 234.33,
+          "std_hits": 6.03,
+          "HR@10_mean": 0.02372,
+          "HR@10_std": 0.00061
+        },
+        "CC_PoE_Router": {
+          "hits_seed_42": 237,
+          "hits_seed_123": 227,
+          "hits_seed_2024": 248,
+          "mean_hits": 237.33,
+          "std_hits": 10.5,
+          "HR@10_mean": 0.02402,
+          "HR@10_std": 0.00106
+        },
+        "Oracle": {
+          "hits_seed_42": 251,
+          "hits_seed_123": 266,
+          "hits_seed_2024": 253,
+          "mean_hits": 256.67,
+          "std_hits": 8.14,
+          "HR@10_mean": 0.02598,
+          "HR@10_std": 0.00082
+        }
+      },
+      "net_hits_gained_over_poe": {
+        "mean_delta_hits": 3.0,
+        "std_delta_hits": 4.58,
+        "relative_gain_pct": 1.28
+      },
+      "mcnemar_contingency_seed_42": {
+        "comparator": "Static 50/50 PoE",
+        "test_type": "Two-sided Exact Binomial McNemar Test",
+        "n00": 9602,
+        "n01": 43,
+        "n10": 41,
+        "n11": 194,
+        "total": 9880,
+        "raw_exact_binomial_p": 0.9132,
+        "holm_adjusted_p": 1.0
+      },
+      "oracle_actions": {
+        "rule": "Table V Reciprocal Rank Tie-Breaker (H = 0.5 Pc + 0.5 Ps)",
+        "C_pct": 31.7,
+        "S_pct": 54.1,
+        "H_pct": 14.2,
+        "counts": {
+          "C": 3134,
+          "S": 5348,
+          "H": 1398,
+          "Total": 9880
+        }
+      }
+    },
+    "KuaiRec Micro-Video": {
+      "dataset": "KuaiRec Micro-Video",
+      "domain": "Micro-Video / Short Feeds",
+      "protocol_notes": "Backbones r\u00e9entra\u00een\u00e9s sur 3 seeds [42, 123, 2024]; le +/- refl\u00e8te le r\u00e9entra\u00eenement stochastique des backbones. \u00c9valuation issue du run unique sauvegard\u00e9 dans frozen_kuairec_predictions.pt.",
+      "active_users": 1411,
+      "candidate_items": 3327,
+      "models": {
+        "SASRec": {
+          "hits_seed_42": 5,
+          "hits_seed_123": 7,
+          "hits_seed_2024": 3,
+          "mean_hits": 5.0,
+          "std_hits": 2.0,
+          "HR@10_mean": 0.00354,
+          "HR@10_std": 0.00142,
+          "note": "Seed 42 = 5 (0.0035); Moyenne 3 seeds = 5.00 +/- 2.00 (seeds: 5, 7, 3)"
+        },
+        "SemanticExpert": {
+          "hits_seed_42": 4,
+          "hits_seed_123": 5,
+          "hits_seed_2024": 3,
+          "mean_hits": 4.0,
+          "std_hits": 1.0,
+          "HR@10_mean": 0.00283,
+          "HR@10_std": 0.00071,
+          "note": "Seed 42 = 4 (0.0028); Moyenne 3 seeds = 4.00 +/- 1.00 (seeds: 4, 5, 3)"
+        },
+        "Static_50_50_Blend": {
+          "hits_seed_42": 2,
+          "hits_seed_123": 4,
+          "hits_seed_2024": 3,
+          "mean_hits": 3.0,
+          "std_hits": 1.0,
+          "HR@10_mean": 0.00213,
+          "HR@10_std": 0.00071
+        },
+        "Static_50_50_PoE": {
+          "hits_seed_42": 4,
+          "hits_seed_123": 3,
+          "hits_seed_2024": 2,
+          "mean_hits": 3.0,
+          "std_hits": 1.0,
+          "HR@10_mean": 0.00213,
+          "HR@10_std": 0.00071,
+          "note": "Seed 42 = 4 (0.0028); Moyenne 3 seeds = 3.00 +/- 1.00 (seeds: 4, 3, 2)"
+        },
+        "CC_PoE_Router": {
+          "hits_seed_42": 4,
+          "hits_seed_123": 4,
+          "hits_seed_2024": 2,
+          "mean_hits": 3.33,
+          "std_hits": 1.15,
+          "HR@10_mean": 0.00236,
+          "HR@10_std": 0.00082,
+          "note": "Seed 42 = 4 (0.0028); Moyenne 3 seeds = 3.33 +/- 1.15 (seeds: 4, 4, 2)"
+        },
+        "Oracle": {
+          "hits_seed_42": 10,
+          "hits_seed_123": 12,
+          "hits_seed_2024": 7,
+          "mean_hits": 9.67,
+          "std_hits": 2.52,
+          "HR@10_mean": 0.00685,
+          "HR@10_std": 0.00178,
+          "note": "Seed 42 = 10 (0.0071); Moyenne 3 seeds = 9.67 +/- 2.52 (seeds: 10, 12, 7)"
+        }
+      },
+      "net_hits_gained_over_poe": {
+        "net_hits_seed_42": 0.0,
+        "mean_delta_hits_3seeds": 0.33,
+        "std_delta_hits": 0.58
+      },
+      "mcnemar_contingency_seed_42": {
+        "comparator": "Static 50/50 PoE",
+        "test_type": "Two-sided Exact Binomial McNemar Test",
+        "n00": 1407,
+        "n01": 0,
+        "n10": 0,
+        "n11": 4,
+        "total": 1411,
+        "raw_exact_binomial_p": 1.0,
+        "holm_adjusted_p": 1.0
+      },
+      "oracle_actions": {
+        "rule": "Table V Reciprocal Rank Tie-Breaker (H = 0.5 Pc + 0.5 Ps)",
+        "C_pct": 45.1,
+        "S_pct": 44.9,
+        "H_pct": 10.0,
+        "counts": {
+          "C": 636,
+          "S": 634,
+          "H": 141,
+          "Total": 1411
+        }
+      },
+      "oracle_actions_seed_42": {
+        "rule": "Table V Reciprocal Rank Tie-Breaker (H = 0.5 Pc + 0.5 Ps)",
+        "C_pct": 47.1,
+        "S_pct": 44.0,
+        "H_pct": 8.9,
+        "counts": {
+          "C": 665,
+          "S": 621,
+          "H": 125,
+          "Total": 1411
+        }
+      },
+      "oracle_actions_3seeds_mean": {
+        "rule": "Table V Reciprocal Rank Tie-Breaker (H = 0.5 Pc + 0.5 Ps)",
+        "C_pct": 45.1,
+        "S_pct": 44.9,
+        "H_pct": 10.0,
+        "counts_mean": {
+          "C": 635.7,
+          "S": 634.0,
+          "H": 141.3,
+          "Total": 1411.0
+        }
+      }
+    }
+  },
+  "holm_correction": {
+    "protocol": "Holm-Bonferroni step-down procedure on m=3 tests using canonical Seed 42 contingency",
+    "rank_1_movielens": {
+      "dataset": "MovieLens-1M",
+      "seed": 42,
+      "raw_p": 0.0236,
+      "threshold": 0.016666666666666666,
+      "holm_p": 0.0709,
+      "decision": "Non-significant (p_raw = 0.0236 > 0.0167, p_Holm = 0.0709 > 0.05)"
+    },
+    "rank_2_beauty": {
+      "dataset": "Amazon Beauty (2014 5-core)",
+      "seed": 42,
+      "raw_p": 0.9132,
+      "threshold": 0.025,
+      "holm_p": 1.0,
+      "decision": "Non-significant (p_raw = 0.9132 > 0.0250, p_Holm = 1.0000)"
+    },
+    "rank_3_kuairec": {
+      "dataset": "KuaiRec Micro-Video",
+      "seed": 42,
+      "raw_p": 1.0,
+      "threshold": 0.05,
+      "holm_p": 1.0,
+      "decision": "Non-significant (p_raw = 1.0000 > 0.0500, p_Holm = 1.0000)"
+    },
+    "global_scientific_conclusion": "Using canonical Seed 42 across all three datasets, the Holm-adjusted p-values on m=3 tests are 0.0709, 1.0000, and 1.0000. No dataset achieves statistically significant outperformance over Static PoE at family-wise alpha = 0.05."
+  }
+}

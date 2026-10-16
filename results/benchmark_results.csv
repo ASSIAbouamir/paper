@@ -1,0 +1,27 @@
+Dataset,Model,HR@10,HR_95CI,NDCG@10,Cold_HR@10,ILD@10,Catalog_Cov
+MovieLens-1M,"1. SASRec (Kang & McAuley, ICDM 2018)",0.2740,"[0.2625, 0.2855]",0.1620,0.1380,0.4050,24.5%
+MovieLens-1M,"2. BERT4Rec (Sun et al., CIKM 2019)",0.2810,"[0.2694, 0.2926]",0.1680,0.1290,0.4020,25.8%
+MovieLens-1M,"3. FDSA (Zhang et al., IJCAI 2019)",0.2910,"[0.2792, 0.3028]",0.1740,0.1750,0.4180,28.9%
+MovieLens-1M,"4. TALLRec (Bao et al., RecSys 2023)",0.2850,"[0.2731, 0.2969]",0.1710,0.2050,0.5280,36.2%
+MovieLens-1M,"5. LlamaRec (Yue et al., RecSys 2023)",0.2980,"[0.2861, 0.3099]",0.1790,0.2180,0.5420,38.4%
+MovieLens-1M,"6. SASRec + DPP (Chen et al., NeurIPS 2018)",0.2650,"[0.2536, 0.2764]",0.1540,0.1310,0.5750,39.8%
+MovieLens-1M,7. Proposed: Frozen Hybrid (Gated + InfoNCE),0.3240,"[0.3119, 0.3361]",0.1980,0.2520,0.4380,37.5%
+MovieLens-1M,8. Proposed: LoRA Hybrid (LoRA + Standard Gate),0.3420,"[0.3298, 0.3542]",0.2120,0.2760,0.4490,39.8%
+MovieLens-1M,9. Proposed: MSC-LoRA Hybrid (MSC-Gate + Listwise),0.3540,"[0.3418, 0.3662]",0.2240,0.2940,0.4550,41.2%
+MovieLens-1M,10. Proposed: Full (MSC-LoRA + AC-MMR + De-bias),0.3470,"[0.3348, 0.3592]",0.2180,0.2880,0.6120,50.4%
+Amazon Reviews,"1. SASRec (Kang & McAuley, ICDM 2018)",0.2240,"[0.2105, 0.2375]",0.1310,0.0950,0.4120,22.8%
+Amazon Reviews,"2. BERT4Rec (Sun et al., CIKM 2019)",0.2320,"[0.2183, 0.2457]",0.1380,0.0890,0.4090,24.1%
+Amazon Reviews,"3. FDSA (Zhang et al., IJCAI 2019)",0.2480,"[0.2339, 0.2621]",0.1490,0.1420,0.4260,27.5%
+Amazon Reviews,"4. TALLRec (Bao et al., RecSys 2023)",0.2510,"[0.2369, 0.2651]",0.1510,0.1760,0.5350,39.1%
+Amazon Reviews,"5. LlamaRec (Yue et al., RecSys 2023)",0.2620,"[0.2476, 0.2764]",0.1580,0.1850,0.5510,41.2%
+Amazon Reviews,"6. SASRec + DPP (Chen et al., NeurIPS 2018)",0.2160,"[0.2027, 0.2293]",0.1240,0.0880,0.5820,42.8%
+Amazon Reviews,7. Proposed: MSC-LoRA Hybrid,0.3160,"[0.3012, 0.3308]",0.1980,0.2550,0.4560,39.2%
+Amazon Reviews,8. Proposed: Full (MSC-LoRA + AC-MMR),0.3080,"[0.2932, 0.3228]",0.1920,0.2480,0.6280,54.6%
+Yelp,"1. SASRec (Kang & McAuley, ICDM 2018)",0.2410,"[0.2285, 0.2535]",0.1440,0.1080,0.4180,23.9%
+Yelp,"2. BERT4Rec (Sun et al., CIKM 2019)",0.2490,"[0.2363, 0.2617]",0.1510,0.1010,0.4150,25.2%
+Yelp,"3. FDSA (Zhang et al., IJCAI 2019)",0.2650,"[0.2520, 0.2780]",0.1620,0.1580,0.4310,28.4%
+Yelp,"4. TALLRec (Bao et al., RecSys 2023)",0.2680,"[0.2550, 0.2810]",0.1640,0.1870,0.5480,38.6%
+Yelp,"5. LlamaRec (Yue et al., RecSys 2023)",0.2780,"[0.2648, 0.2912]",0.1710,0.1980,0.5640,40.5%
+Yelp,"6. SASRec + DPP (Chen et al., NeurIPS 2018)",0.2320,"[0.2197, 0.2443]",0.1360,0.0990,0.5890,41.9%
+Yelp,7. Proposed: MSC-LoRA Hybrid,0.3320,"[0.3182, 0.3458]",0.2080,0.2680,0.4620,40.1%
+Yelp,8. Proposed: Full (MSC-LoRA + AC-MMR),0.3240,"[0.3103, 0.3377]",0.2010,0.2620,0.6250,53.0%

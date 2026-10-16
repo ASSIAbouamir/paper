@@ -1,0 +1,47 @@
+{
+  "diagnostic_audit_name": "Empirical Audit of Metric Alignment & Bilateral Fusion",
+  "status": "Invalidated & Resolved via High-Capacity Benchmark",
+  "audit_summary": {
+    "flaw_1_data_snooping": "The previously reported 638.2 hits were obtained via validation-target snooping during checkpoint selection. Under strict out-of-fold partitioning, Bi-MeF on compact models achieves ~538 hits.",
+    "flaw_2_architecture_suboptimality": "On compact representations, Ablation C (bilateral cross-terms W_c2s, W_s2c without gating) yields 555 hits, outperforming the full gated model (538 hits) by 17 hits, proving the 4-way router overfits.",
+    "flaw_3_weak_backbone_artifact": "The apparent gain of Cosine PoE (from 311 to 522 hits on compact models) is an artifact of uncalibrated embedding norms in under-trained models, where cosine normalization acts as an ad-hoc popularity regularizer.",
+    "decisive_strong_backbone_result": "On properly trained high-capacity backbones (SASRec alone = 741-765 hits, Static Dot PoE = 765-772 hits), Cosine PoE drops to 740 hits (-25 hits vs Dot PoE), Ablation C yields 748 hits (-17 hits), and Full Bi-MeF yields 774 hits (+9 hits, strictly within the MDE noise floor of 19.8-28.6 hits, p = 0.38)."
+  },
+  "compact_backbone_honest_audit": {
+    "standalone_sasrec": 334,
+    "standalone_semantic": 258,
+    "static_softmax_poe": 438,
+    "static_cosine_poe": 522,
+    "ablation_a_tuned_poe": 524,
+    "ablation_b_dynamic_gate": 521,
+    "ablation_c_bilateral_no_gate": 555,
+    "full_bimef_honest_split": 538,
+    "full_bimef_snooped_checkpoint": 638
+  },
+  "strong_backbone_decisive_benchmark": {
+    "seed_42": {
+      "sasrec_dot_product": 741,
+      "sasrec_cosine": 735,
+      "semantic_dot_product": 609,
+      "semantic_cosine": 609,
+      "static_50_50_dot_poe": 765,
+      "static_50_50_cosine_poe": 740,
+      "bilateral_ablation_c": 748,
+      "full_bimef_honest": 774,
+      "delta_vs_static_poe": "+9 hits",
+      "p_value_mcnemar": 0.381,
+      "statistical_status": "Statistically insignificant (MDE threshold: 19.8 hits)"
+    },
+    "5_seed_high_capacity_distribution": {
+      "standalone_sasrec_mean": 765.2,
+      "standalone_sasrec_std": 35.4,
+      "standalone_semantic_mean": 606.4,
+      "standalone_semantic_std": 24.3,
+      "static_softmax_poe_mean": 772.2,
+      "static_softmax_poe_std": 17.3,
+      "three_action_oracle_mean": 825.8,
+      "three_action_oracle_std": 36.7
+    }
+  },
+  "scientific_conclusion": "Metric alignment and bilateral cross-projections merely compensate for under-trained or poorly calibrated representations in weak backbones. When evaluated on state-of-the-art sequential backbones, cosine scoring strips true popularity priors (-25 hits), and learned dynamic fusion is statistically equivalent to static 50/50 PoE."
+}

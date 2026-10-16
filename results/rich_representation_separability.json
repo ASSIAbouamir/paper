@@ -1,0 +1,7 @@
+{
+  "mean_auc_128d_rich": 0.5828210891928041,
+  "std_auc_128d_rich": 0.048175701203087486,
+  "mean_auc_8d_summary": 0.6612942305133647,
+  "collab_count": 407,
+  "semantic_count": 215
+}

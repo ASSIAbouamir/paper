@@ -1,0 +1,95 @@
+{
+  "dataset": "Amazon_Beauty_2014_5core",
+  "num_users": 9880,
+  "seeds": [
+    42,
+    123,
+    2024
+  ],
+  "static_poe_mean_hits": 300.3333333333333,
+  "oracle_mean_hits": 425.0,
+  "oracle_headroom_hits": 124.66666666666669,
+  "benchmark": {
+    "SASRec Alone": {
+      "seed_42_hits": 168,
+      "seed_123_hits": 145,
+      "seed_2024_hits": 175,
+      "mean_hits": 162.66666666666666,
+      "std_hits": 12.814921857827391,
+      "hr10_mean": 0.016464237516869096,
+      "ndcg10_mean": 0.008008344589571113
+    },
+    "Semantic (BGE) Alone": {
+      "seed_42_hits": 129,
+      "seed_123_hits": 155,
+      "seed_2024_hits": 190,
+      "mean_hits": 158.0,
+      "std_hits": 24.99333244420733,
+      "hr10_mean": 0.015991902834008098,
+      "ndcg10_mean": 0.00755881500580428
+    },
+    "Static 50/50 PoE": {
+      "seed_42_hits": 312,
+      "seed_123_hits": 271,
+      "seed_2024_hits": 318,
+      "mean_hits": 300.3333333333333,
+      "std_hits": 20.885933597094056,
+      "hr10_mean": 0.030398110661268553,
+      "ndcg10_mean": 0.014063143422853109
+    },
+    "Calibrated Static PoE": {
+      "seed_42_hits": 287,
+      "seed_123_hits": 271,
+      "seed_2024_hits": 322,
+      "mean_hits": 293.3333333333333,
+      "std_hits": 21.29684379328438,
+      "hr10_mean": 0.029689608636977057,
+      "ndcg10_mean": 0.013639537363409296
+    },
+    "Fixed Disagreement PoE": {
+      "seed_42_hits": 302,
+      "seed_123_hits": 271,
+      "seed_2024_hits": 321,
+      "mean_hits": 298.0,
+      "std_hits": 20.607442021431645,
+      "hr10_mean": 0.030161943319838055,
+      "ndcg10_mean": 0.013918979031788412
+    },
+    "Contextual CC-PoE": {
+      "seed_42_hits": 283,
+      "seed_123_hits": 277,
+      "seed_2024_hits": 290,
+      "mean_hits": 283.3333333333333,
+      "std_hits": 5.312459150169743,
+      "hr10_mean": 0.0286774628879892,
+      "ndcg10_mean": 0.01322991640790063
+    },
+    "Soft 3-Way MoE": {
+      "seed_42_hits": 187,
+      "seed_123_hits": 197,
+      "seed_2024_hits": 234,
+      "mean_hits": 206.0,
+      "std_hits": 20.215505600075073,
+      "hr10_mean": 0.020850202429149797,
+      "ndcg10_mean": 0.010132423299230548
+    },
+    "GeoTrust (Candidate Trust)": {
+      "seed_42_hits": 335,
+      "seed_123_hits": 325,
+      "seed_2024_hits": 358,
+      "mean_hits": 339.3333333333333,
+      "std_hits": 13.816254517375137,
+      "hr10_mean": 0.03434547908232118,
+      "ndcg10_mean": 0.015763480788750162
+    },
+    "Strict 3-Action Oracle": {
+      "seed_42_hits": 415,
+      "seed_123_hits": 402,
+      "seed_2024_hits": 458,
+      "mean_hits": 425.0,
+      "std_hits": 23.930454794396756,
+      "hr10_mean": 0.0430161943319838,
+      "ndcg10_mean": 0.021259920831071418
+    }
+  }
+}

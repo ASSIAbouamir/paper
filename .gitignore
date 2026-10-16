@@ -1,0 +1,44 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Large model checkpoints, weights and prediction caches (> 100MB)
+*.pt
+*.pth
+*.bin
+*.pt.cache
+checkpoints/
+
+# Datasets and Archives (> 50MB)
+*.zip
+*.tar*
+*.gz
+*.dat
+*.csv.gz
+
+# LaTeX build outputs
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini

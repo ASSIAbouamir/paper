@@ -1,0 +1,32 @@
+[
+  {
+    "Formulation": "1. 3-Action Soft Mixture {C, S, H} (Proposed)",
+    "HR@10": 0.03875455448824114,
+    "NDCG@10": 0.01799163336933033,
+    "Mechanism": "Continuous 3-way Softmax (w_C, w_S, w_H)"
+  },
+  {
+    "Formulation": "2. Direct Scalar Gate alpha_u in [0, 1]",
+    "HR@10": 0.03842331897979463,
+    "NDCG@10": 0.017820604793050764,
+    "Mechanism": "Sigmoid Regression on Optimal Soft Alpha"
+  },
+  {
+    "Formulation": "3. 2-Action Soft Router {C, S}",
+    "HR@10": 0.038092083471348126,
+    "NDCG@10": 0.017717227039409315,
+    "Mechanism": "Binary Softmax Gate (w_C, w_S)"
+  },
+  {
+    "Formulation": "4. 3-Action Hard Selection (argmax)",
+    "HR@10": 0.031632991056641274,
+    "NDCG@10": 0.015242367754549489,
+    "Mechanism": "Discrete Mode Collapse to argmax"
+  },
+  {
+    "Formulation": "5. 2-Action Hard Selection (argmax)",
+    "HR@10": 0.03097052003974826,
+    "NDCG@10": 0.014712979603424896,
+    "Mechanism": "Discrete Binary Switch {C vs S}"
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "movielens": {
+    "hr_static": 0.06409407088439881,
+    "hr_oracle": 0.09307717787346803,
+    "headroom_relative": 45.21963824289405,
+    "aahr_5seed_hr10": 0.06194104007949652,
+    "oracle_gap_recovered_pct": -7.428571428571424,
+    "error_matrix_3x3": [
+      [
+        0.0,
+        0.0,
+        359.0
+      ],
+      [
+        0.6,
+        0.0,
+        268.4
+      ],
+      [
+        1.4,
+        0.0,
+        5408.6
+      ]
+    ]
+  },
+  "amazon": {
+    "hr_collab": 0.21333333333333335,
+    "hr_semantic": 1.0,
+    "hr_static": 1.0,
+    "hr_oracle": 1.0,
+    "headroom_relative": 0.0,
+    "regime_c_pct": 0.0,
+    "regime_s_pct": 0.0,
+    "regime_h_pct": 100.0
+  }
+}

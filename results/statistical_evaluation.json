@@ -1,0 +1,341 @@
+{
+    "benchmarks": {
+        "MovieLens-1M": {
+            "catalog_size": 3883,
+            "domain": "Cinema / Movies",
+            "models": {
+                "1. SASRec (Kang & McAuley, ICDM 2018)": {
+                    "HR@10": 0.274,
+                    "HR_95CI": "[0.2625, 0.2855]",
+                    "NDCG@10": 0.162,
+                    "Cold_HR@10": 0.138,
+                    "ILD@10": 0.405,
+                    "Catalog_Cov": 0.245
+                },
+                "2. BERT4Rec (Sun et al., CIKM 2019)": {
+                    "HR@10": 0.281,
+                    "HR_95CI": "[0.2694, 0.2926]",
+                    "NDCG@10": 0.168,
+                    "Cold_HR@10": 0.129,
+                    "ILD@10": 0.402,
+                    "Catalog_Cov": 0.258
+                },
+                "3. FDSA (Zhang et al., IJCAI 2019)": {
+                    "HR@10": 0.291,
+                    "HR_95CI": "[0.2792, 0.3028]",
+                    "NDCG@10": 0.174,
+                    "Cold_HR@10": 0.175,
+                    "ILD@10": 0.418,
+                    "Catalog_Cov": 0.289
+                },
+                "4. TALLRec (Bao et al., RecSys 2023)": {
+                    "HR@10": 0.285,
+                    "HR_95CI": "[0.2731, 0.2969]",
+                    "NDCG@10": 0.171,
+                    "Cold_HR@10": 0.205,
+                    "ILD@10": 0.528,
+                    "Catalog_Cov": 0.362
+                },
+                "5. LlamaRec (Yue et al., RecSys 2023)": {
+                    "HR@10": 0.298,
+                    "HR_95CI": "[0.2861, 0.3099]",
+                    "NDCG@10": 0.179,
+                    "Cold_HR@10": 0.218,
+                    "ILD@10": 0.542,
+                    "Catalog_Cov": 0.384
+                },
+                "6. SASRec + DPP (Chen et al., NeurIPS 2018)": {
+                    "HR@10": 0.265,
+                    "HR_95CI": "[0.2536, 0.2764]",
+                    "NDCG@10": 0.154,
+                    "Cold_HR@10": 0.131,
+                    "ILD@10": 0.575,
+                    "Catalog_Cov": 0.398
+                },
+                "7. Proposed: Frozen Hybrid (Gated + InfoNCE)": {
+                    "HR@10": 0.324,
+                    "HR_95CI": "[0.3119, 0.3361]",
+                    "NDCG@10": 0.198,
+                    "Cold_HR@10": 0.252,
+                    "ILD@10": 0.438,
+                    "Catalog_Cov": 0.375
+                },
+                "8. Proposed: LoRA Hybrid (LoRA + Standard Gate)": {
+                    "HR@10": 0.342,
+                    "HR_95CI": "[0.3298, 0.3542]",
+                    "NDCG@10": 0.212,
+                    "Cold_HR@10": 0.276,
+                    "ILD@10": 0.449,
+                    "Catalog_Cov": 0.398
+                },
+                "9. Proposed: MSC-LoRA Hybrid (MSC-Gate + Listwise)": {
+                    "HR@10": 0.354,
+                    "HR_95CI": "[0.3418, 0.3662]",
+                    "NDCG@10": 0.224,
+                    "Cold_HR@10": 0.294,
+                    "ILD@10": 0.455,
+                    "Catalog_Cov": 0.412
+                },
+                "10. Proposed: Full (MSC-LoRA + AC-MMR + De-bias)": {
+                    "HR@10": 0.347,
+                    "HR_95CI": "[0.3348, 0.3592]",
+                    "NDCG@10": 0.218,
+                    "Cold_HR@10": 0.288,
+                    "ILD@10": 0.612,
+                    "Catalog_Cov": 0.504
+                }
+            }
+        },
+        "Amazon Reviews": {
+            "catalog_size": 1200,
+            "domain": "E-commerce Products",
+            "models": {
+                "1. SASRec (Kang & McAuley, ICDM 2018)": {
+                    "HR@10": 0.224,
+                    "HR_95CI": "[0.2105, 0.2375]",
+                    "NDCG@10": 0.131,
+                    "Cold_HR@10": 0.095,
+                    "ILD@10": 0.412,
+                    "Catalog_Cov": 0.228
+                },
+                "2. BERT4Rec (Sun et al., CIKM 2019)": {
+                    "HR@10": 0.232,
+                    "HR_95CI": "[0.2183, 0.2457]",
+                    "NDCG@10": 0.138,
+                    "Cold_HR@10": 0.089,
+                    "ILD@10": 0.409,
+                    "Catalog_Cov": 0.241
+                },
+                "3. FDSA (Zhang et al., IJCAI 2019)": {
+                    "HR@10": 0.248,
+                    "HR_95CI": "[0.2339, 0.2621]",
+                    "NDCG@10": 0.149,
+                    "Cold_HR@10": 0.142,
+                    "ILD@10": 0.426,
+                    "Catalog_Cov": 0.275
+                },
+                "4. TALLRec (Bao et al., RecSys 2023)": {
+                    "HR@10": 0.251,
+                    "HR_95CI": "[0.2369, 0.2651]",
+                    "NDCG@10": 0.151,
+                    "Cold_HR@10": 0.176,
+                    "ILD@10": 0.535,
+                    "Catalog_Cov": 0.391
+                },
+                "5. LlamaRec (Yue et al., RecSys 2023)": {
+                    "HR@10": 0.262,
+                    "HR_95CI": "[0.2476, 0.2764]",
+                    "NDCG@10": 0.158,
+                    "Cold_HR@10": 0.185,
+                    "ILD@10": 0.551,
+                    "Catalog_Cov": 0.412
+                },
+                "6. SASRec + DPP (Chen et al., NeurIPS 2018)": {
+                    "HR@10": 0.216,
+                    "HR_95CI": "[0.2027, 0.2293]",
+                    "NDCG@10": 0.124,
+                    "Cold_HR@10": 0.088,
+                    "ILD@10": 0.582,
+                    "Catalog_Cov": 0.428
+                },
+                "7. Proposed: MSC-LoRA Hybrid": {
+                    "HR@10": 0.316,
+                    "HR_95CI": "[0.3012, 0.3308]",
+                    "NDCG@10": 0.198,
+                    "Cold_HR@10": 0.255,
+                    "ILD@10": 0.456,
+                    "Catalog_Cov": 0.392
+                },
+                "8. Proposed: Full (MSC-LoRA + AC-MMR)": {
+                    "HR@10": 0.308,
+                    "HR_95CI": "[0.2932, 0.3228]",
+                    "NDCG@10": 0.192,
+                    "Cold_HR@10": 0.248,
+                    "ILD@10": 0.628,
+                    "Catalog_Cov": 0.546
+                }
+            }
+        },
+        "Yelp": {
+            "catalog_size": 1500,
+            "domain": "Local Businesses / Services",
+            "models": {
+                "1. SASRec (Kang & McAuley, ICDM 2018)": {
+                    "HR@10": 0.241,
+                    "HR_95CI": "[0.2285, 0.2535]",
+                    "NDCG@10": 0.144,
+                    "Cold_HR@10": 0.108,
+                    "ILD@10": 0.418,
+                    "Catalog_Cov": 0.239
+                },
+                "2. BERT4Rec (Sun et al., CIKM 2019)": {
+                    "HR@10": 0.249,
+                    "HR_95CI": "[0.2363, 0.2617]",
+                    "NDCG@10": 0.151,
+                    "Cold_HR@10": 0.101,
+                    "ILD@10": 0.415,
+                    "Catalog_Cov": 0.252
+                },
+                "3. FDSA (Zhang et al., IJCAI 2019)": {
+                    "HR@10": 0.265,
+                    "HR_95CI": "[0.2520, 0.2780]",
+                    "NDCG@10": 0.162,
+                    "Cold_HR@10": 0.158,
+                    "ILD@10": 0.431,
+                    "Catalog_Cov": 0.284
+                },
+                "4. TALLRec (Bao et al., RecSys 2023)": {
+                    "HR@10": 0.268,
+                    "HR_95CI": "[0.2550, 0.2810]",
+                    "NDCG@10": 0.164,
+                    "Cold_HR@10": 0.187,
+                    "ILD@10": 0.548,
+                    "Catalog_Cov": 0.386
+                },
+                "5. LlamaRec (Yue et al., RecSys 2023)": {
+                    "HR@10": 0.278,
+                    "HR_95CI": "[0.2648, 0.2912]",
+                    "NDCG@10": 0.171,
+                    "Cold_HR@10": 0.198,
+                    "ILD@10": 0.564,
+                    "Catalog_Cov": 0.405
+                },
+                "6. SASRec + DPP (Chen et al., NeurIPS 2018)": {
+                    "HR@10": 0.232,
+                    "HR_95CI": "[0.2197, 0.2443]",
+                    "NDCG@10": 0.136,
+                    "Cold_HR@10": 0.099,
+                    "ILD@10": 0.589,
+                    "Catalog_Cov": 0.419
+                },
+                "7. Proposed: MSC-LoRA Hybrid": {
+                    "HR@10": 0.332,
+                    "HR_95CI": "[0.3182, 0.3458]",
+                    "NDCG@10": 0.208,
+                    "Cold_HR@10": 0.268,
+                    "ILD@10": 0.462,
+                    "Catalog_Cov": 0.401
+                },
+                "8. Proposed: Full (MSC-LoRA + AC-MMR)": {
+                    "HR@10": 0.324,
+                    "HR_95CI": "[0.3103, 0.3377]",
+                    "NDCG@10": 0.201,
+                    "Cold_HR@10": 0.262,
+                    "ILD@10": 0.625,
+                    "Catalog_Cov": 0.53
+                }
+            }
+        }
+    },
+    "statistical_tests": {
+        "1. ML-1M Global vs LlamaRec": {
+            "comparison": "Proposed Full vs LlamaRec (Full-Catalog HR@10)",
+            "mean_diff_hit": 0.04900662251655629,
+            "t_stat": 7.032114100369957,
+            "p_val_t": 2.034372670323137e-12,
+            "wilcoxon_z": -6.130555485848079,
+            "cohens_d_hit": 0.09048309336850413,
+            "cohens_d_ndcg": 0.17218435557424425,
+            "effect_size": "Mod\u00e9r\u00e9 (d >= 0.15)",
+            "signif": "*** (p<0.001)"
+        },
+        "2. ML-1M Global vs SASRec": {
+            "comparison": "Proposed Full vs SASRec (Full-Catalog HR@10)",
+            "mean_diff_hit": 0.07301324503311259,
+            "t_stat": 10.449485800193024,
+            "p_val_t": 1e-15,
+            "wilcoxon_z": -9.351220165522818,
+            "cohens_d_hit": 0.13445484328275917,
+            "cohens_d_ndcg": 0.199080633186606,
+            "effect_size": "Mod\u00e9r\u00e9 (d >= 0.15)",
+            "signif": "*** (p<0.001)"
+        },
+        "3. MSC-Gate vs Standard Gate": {
+            "comparison": "Proposed MSC-LoRA vs Standard LoRA (HR@10)",
+            "mean_diff_hit": 0.011920529801324504,
+            "t_stat": 1.6916882168935945,
+            "p_val_t": 0.09070543626307215,
+            "wilcoxon_z": -1.6444789524737267,
+            "cohens_d_hit": 0.021767164283003952,
+            "cohens_d_ndcg": 0.10659634912824081,
+            "effect_size": "Faible",
+            "signif": "n.s."
+        },
+        "4. Cold-Start vs LlamaRec": {
+            "comparison": "Proposed Full vs LlamaRec (Cold-Start Cohort)",
+            "mean_diff_hit": 0.0695364238410596,
+            "t_stat": 4.798726307325223,
+            "p_val_t": 1.5967781661352376e-06,
+            "wilcoxon_z": -3.492467349703382,
+            "cohens_d_hit": 0.1380678346469061,
+            "cohens_d_ndcg": 0.2097081697372718,
+            "effect_size": "Grand (d >= 0.20)",
+            "signif": "*** (p<0.001)"
+        },
+        "5. Cold-Start vs SASRec": {
+            "comparison": "Proposed Full vs SASRec (Cold-Start Cohort)",
+            "mean_diff_hit": 0.1498344370860927,
+            "t_stat": 10.447803975683811,
+            "p_val_t": 1e-15,
+            "wilcoxon_z": -8.382407118650944,
+            "cohens_d_hit": 0.3006017804216143,
+            "cohens_d_ndcg": 0.3522587621343252,
+            "effect_size": "Grand (d >= 0.20)",
+            "signif": "*** (p<0.001)"
+        },
+        "6. Amazon vs LlamaRec": {
+            "comparison": "Proposed Full vs LlamaRec (Amazon HR@10)",
+            "mean_diff_hit": 0.046,
+            "t_stat": 3.195894358858725,
+            "p_val_t": 0.0013939814045449417,
+            "wilcoxon_z": -2.7128906674843547,
+            "cohens_d_hit": 0.0825176375206538,
+            "cohens_d_ndcg": 0.15312156823014358,
+            "effect_size": "Mod\u00e9r\u00e9 (d >= 0.15)",
+            "signif": "** (p<0.01)"
+        },
+        "7. Yelp vs LlamaRec": {
+            "comparison": "Proposed Full vs LlamaRec (Yelp HR@10)",
+            "mean_diff_hit": 0.04555555555555556,
+            "t_stat": 3.5400034061843684,
+            "p_val_t": 0.0004001218678126861,
+            "wilcoxon_z": -2.8382111663007668,
+            "cohens_d_hit": 0.08343868046454811,
+            "cohens_d_ndcg": 0.1349443783313949,
+            "effect_size": "Faible",
+            "signif": "*** (p<0.001)"
+        },
+        "8. Diversity vs SASRec+DPP": {
+            "comparison": "Proposed Full vs SASRec+DPP (ILD@10)",
+            "mean_diff_hit": 0.03715046440929857,
+            "t_stat": 43.326336531368895,
+            "p_val_t": 1e-15,
+            "wilcoxon_z": -38.609791727963,
+            "cohens_d_hit": 0.5574854016485367,
+            "cohens_d_ndcg": 0.5574854016485367,
+            "effect_size": "Grand (d >= 0.50)",
+            "signif": "*** (p<0.001)"
+        },
+        "9. Accuracy Preservation": {
+            "comparison": "Proposed Full vs Proposed MSC Hybrid (HR@10 trade-off)",
+            "mean_diff_hit": -0.00695364238410596,
+            "t_stat": -0.96711054840077,
+            "p_val_t": 0.33348877284463185,
+            "wilcoxon_z": -0.4906260107203545,
+            "cohens_d_hit": -0.012443932621060343,
+            "cohens_d_ndcg": 0.07351676394433565,
+            "effect_size": "Faible",
+            "signif": "n.s."
+        }
+    },
+    "metadata": {
+        "evaluation_protocol": "Full-Catalog Ranking (All Items)",
+        "leave_one_out": "Strict chronologic without leakage",
+        "datasets": [
+            "MovieLens-1M",
+            "Amazon Reviews",
+            "Yelp"
+        ],
+        "architecture": "Multi-Scale Semantic-Consistent Gate (MSC-Gate) + All-Attention LoRA + Listwise Ranking Loss"
+    }
+}

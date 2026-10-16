@@ -1,0 +1,15 @@
+{
+  "sasrec_hits": 741,
+  "sasrec_hr10": 0.12268211920529801,
+  "semantic_hits": 585,
+  "semantic_hr10": 0.09685430463576158,
+  "static_5050_hits": 756,
+  "static_5050_hr10": 0.1251655629139073,
+  "oracle_hits": 814,
+  "oracle_hr10": 0.13476821780204773,
+  "calibrated_alpha": 0.7749999999999999,
+  "calibrated_poe_hits": 765,
+  "calibrated_poe_hr10": 0.12665562913907286,
+  "disagreement_cc_hits": 765,
+  "disagreement_cc_hr10": 0.12665562913907286
+}

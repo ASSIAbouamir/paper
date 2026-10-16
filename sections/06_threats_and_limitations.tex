@@ -1,0 +1,53 @@
+% ==============================================================================
+% SECTION 6: DISCUSSION, LIMITATIONS & THREATS TO VALIDITY
+% ==============================================================================
+
+\section{Discussion, Limitations \& Threats to Validity}
+\label{sec:threats}
+
+\subsection{Methodological Nuances \& High-Capacity Backbone Evaluation}
+\label{sec:high_capacity}
+
+To evaluate whether fusion dynamics generalize to stronger backbones and quantify system-wide retraining variance, we repeat the fusion benchmark across 5 independent retrained backbone pairs (\texttt{[42, 123, 2024, 7, 99]}) with Cosine Annealing schedule.
+
+\begin{table*}[t]
+\centering
+\small
+\caption{\textbf{High-Capacity Backbone Benchmark Across 5 Retrained Pairs on MovieLens-1M ($N=6{,}040$).} Evaluating SASRec and Semantic backbones trained with Cosine Annealing. Table reports individual seed hit counts, 5-pair sample mean $\pm$ sample standard deviation, $\text{HR@10}$, and 95\% confidence interval of $\Delta$ vs. SASRec.}
+\label{tab:high_capacity_benchmark}
+\begin{tabular}{lcccccccc}
+\toprule
+\textbf{Model / Strategy} & \textbf{Seed 42} & \textbf{Seed 123} & \textbf{Seed 2024} & \textbf{Seed 7} & \textbf{Seed 99} & \textbf{Mean Hits} & \textbf{HR@10 Mean} & \textbf{Mean $\Delta$ vs. SASRec (95\% CI)} \\
+\midrule
+\textbf{Standalone SASRec} & $734$ & $802$ & $804$ & $753$ & $733$ & $765.2 \pm 35.4$ & $0.1267 \pm 0.0059$ & Baseline \\
+\textbf{Standalone Semantic Expert} & $618$ & $582$ & $632$ & $620$ & $580$ & $606.4 \pm 23.8$ & $0.1004 \pm 0.0039$ & $-158.8 \pm 31.2$ \\
+\midrule
+\textbf{Static 50/50 Logit PoE} & $781$ & $788$ & $785$ & $752$ & $755$ & $772.2 \pm 17.3$ & $0.1278 \pm 0.0029$ & $+7.0 \pm 27.4$ ($[-27.0, +41.0]$) \\
+\textbf{Calibrated Static PoE ($\alpha^*$ on Val)} & $751$ & $802$ & $810$ & $759$ & $743$ & $\mathbf{773.0 \pm 30.8}$ & $\mathbf{0.1280 \pm 0.0051}$ & $\mathbf{+7.8 \pm 6.3}$ ($[+0.03, +15.57]$) \\
+\textbf{Fixed Disagreement PoE ($\lambda=0.21$)} & $748$ & $764$ & $764$ & $738$ & $726$ & $748.0 \pm 16.6$ & $0.1238 \pm 0.0027$ & $\mathbf{-17.2 \pm 22.6}$ ($[-45.2, +10.8]$) \\
+\textbf{Adaptive CC-PoE (Neural Router)} & $780$ & $788$ & $790$ & $749$ & $757$ & $772.9 \pm 18.7$ & $0.1280 \pm 0.0031$ & $+7.7 \pm 26.5$ ($[-25.2, +40.6]$) \\
+\midrule
+\textbf{Three-Action Oracle Upper Bound} & $\mathbf{812}$ & $\mathbf{830}$ & $\mathbf{885}$ & $\mathbf{816}$ & $\mathbf{786}$ & $\mathbf{825.8 \pm 36.7}$ & $\mathbf{0.1367 \pm 0.0061}$ & $\mathbf{+60.6 \pm 21.5}$ ($[+33.9, +87.3]$) \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsubsection{Key Empirical Insights on High-Capacity Regimes}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Learned Routers Fluctuate Around Static PoE:} In this high-capacity regime, Static 50/50 PoE achieves $772.2 \pm 17.3$ hits. The Scalar Router attains $775.6 \pm 19.3$ hits ($\Delta = +3.4$), the 5D Router attains $769.0 \pm 28.5$ hits ($\Delta = -3.2$), candidate-level Learning-to-Rank (LTR) achieves $775.0 \pm 18.6$ hits ($\Delta = +2.8$), and CC-PoE achieves $772.9 \pm 18.7$ hits ($\Delta = +0.7$). Paired McNemar tests against Static PoE confirm that none of these router differences reach statistical significance ($p > 0.25$ across all evaluated pairs). Rather than strictly collapsing to static weights, adaptive architectures fluctuate within the sampling noise floor of stationary fusion.
+    \item \textbf{Statistical Power \& Equivalence Testing (TOST):}
+    \begin{itemize}
+        \item \emph{Minimal Detectable Effect (MDE):} With $N=6{,}040$ and between $50$ and $104$ discordant pairs per seed, our paired tests possess $80\%$ statistical power ($\alpha = 0.05$) to detect true performance shifts of $\text{MDE} \in [19.8, 28.6]$ hits ($\Delta \text{HR@10} \in [0.33\%, 0.47\%]$). Consequently, we cannot rule out smaller latent deltas in the range of $+5$ to $+18$ hits.
+        \item \emph{Two One-Sided Tests (TOST):} Under formal equivalence testing against Static PoE with an \emph{a priori} equivalence margin of $\pm 30$ hits ($\pm 0.50\%$ in $\text{HR@10}$), the null hypothesis of non-equivalence is rejected across all 5 seeds ($p_{\text{TOST}} \le 0.011$; representative Seed 123 $90\%$ CI: $[-7.3, +11.3]$ hits). However, seed-level heterogeneity is real: on Seed 2024, the $90\%$ CI is $[+4.2, +25.8]$ hits, indicating a localized positive shift, while other seeds sit tightly around zero. We therefore conclude that while large routing advantages ($>30$ hits) can be statistically excluded, learned routers exhibit coarse practical indifference to static fusion rather than exact mathematical identity.
+    \end{itemize}
+    \item \textbf{Backbone Retraining Variance Dominates Fusion Delta:} Across seeds, backbone training stochasticity ($733 \to 804$ hits, $\pm 35.4$ hits) is substantially larger than the average gain of static calibration ($+7.8$ hits).
+    \item \textbf{The Fixed Disagreement Penalty Does Not Transfer:} The fixed penalty ($\lambda=0.21$), which yielded consistent gains in the compact regime, degrades performance on 4 out of 5 backbone pairs (mean $\Delta = -17.2$, negative on seeds 123, 2024, 7, and 99). Candidate disagreement filtering is sensitive to relative expert competence and cannot be transferred without retraining.
+    \item \textbf{Bounded Oracle Headroom and Asymmetric Risk:} The discrete Oracle headroom narrows from $+45.2\%$ in the compact regime to $+7.96\%$ ($+60.6$ hits over SASRec alone). Hit-overlap contingency analysis reveals why routing is difficult: across the 5 pairs, the mean number of isolated semantic hits ($n_{01}$, where Semantic succeeds but SASRec fails) is merely $42.0 \pm 18.2$, whereas the number of isolated collaborative hits ($n_{10}$, where SASRec succeeds but Semantic fails) is $201.6 \pm 32.8$. A router attempting to capture the $\approx 42$ semantic hits risks demoting the $\approx 201$ collaborative hits.
+\end{enumerate}
+
+\subsection{Threats to Validity \& Methodological Limitations}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{History Masking Evaluation:} In top-$K$ recommendation, masking seen items during full-catalog evaluation is common. Auditing on MovieLens-1M shows that history masking alters performance marginally (SASRec: $0.0515 \to 0.0508$; Static PoE: $0.0725 \to 0.0714$; Fixed Disagreement PoE: $0.0745 \to 0.0730$). Under history masking, Fixed Disagreement PoE preserves $+10$ net hits over Static PoE ($441$ vs. $431$).
+    \item \textbf{Population Sizing ($N=6{,}038$ vs. $N=6{,}040$):} Raw MovieLens-1M contains $6{,}040$ users. The primary compact benchmark filters 2 users with history length $< 5$, yielding exactly $N = 6{,}038$ users. The high-capacity backbone retraining pipeline retains all $N = 6{,}040$ users ($n_{00} + n_{01} + n_{10} + n_{11} = 6{,}040$), accounting for the 2-instance difference across protocols.
+    \item \textbf{Semantic Backbone Choice:} Our semantic expert utilizes frozen MiniLM representations ($0.0449$). While modern LLM-based recommenders report stronger absolute scores, the paired SASRec + MiniLM setup provides a clean, controlled environment to study the geometric mechanics of dual-expert routing without multi-billion-parameter confounding factors.
+\end{enumerate}

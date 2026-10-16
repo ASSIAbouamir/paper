@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Early-Concat SASRec (FDSA)",
+    "hits": 758,
+    "hr10": 0.12549668550491333,
+    "ndcg10": 0.10477693378925323
+  },
+  {
+    "name": "Unidirectional Cross-Attn (Collab -> Sem)",
+    "hits": 726,
+    "hr10": 0.12019867449998856,
+    "ndcg10": 0.10262423008680344
+  },
+  {
+    "name": "Unidirectional Cross-Attn (Sem -> Collab)",
+    "hits": 819,
+    "hr10": 0.13559602200984955,
+    "ndcg10": 0.11010248959064484
+  }
+]

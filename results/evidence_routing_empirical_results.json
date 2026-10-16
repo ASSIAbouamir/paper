@@ -1,0 +1,242 @@
+{
+  "framework": "Selective Evidence Routing for Sequential Recommendation",
+  "dataset": "MovieLens-1M",
+  "active_users": 6038,
+  "catalog_items": 3628,
+  "seed": 42,
+  "total_runtime_minutes": 15.01,
+  "efficiency": {
+    "p50_latency_ms": 0.379,
+    "p95_latency_ms": 0.509
+  },
+  "table_1_full_catalog_benchmark": [
+    {
+      "Model": "SASRec (Collaborative Expert)",
+      "HR@5": 0.02914872474329248,
+      "HR@10": 0.051010268300761843,
+      "HR@20": 0.09506459092414707,
+      "NDCG@5": 0.017471864572104825,
+      "NDCG@10": 0.02444065301251864,
+      "NDCG@20": 0.03543137086919915,
+      "Oracle Gap (%)": 46.52
+    },
+    {
+      "Model": "Semantic Expert",
+      "HR@5": 0.023517721099701887,
+      "HR@10": 0.043226233852268967,
+      "HR@20": 0.0819807883405101,
+      "NDCG@5": 0.014333090828088677,
+      "NDCG@10": 0.020571826878827682,
+      "NDCG@20": 0.03026471982282815,
+      "Oracle Gap (%)": 54.99
+    },
+    {
+      "Model": "Static Fusion (50/50)",
+      "HR@5": 0.033123550844650546,
+      "HR@10": 0.06177542232527327,
+      "HR@20": 0.11626366346472342,
+      "NDCG@5": 0.019697300251964676,
+      "NDCG@10": 0.028878669264924748,
+      "NDCG@20": 0.04255038812967823,
+      "Oracle Gap (%)": 36.81
+    },
+    {
+      "Model": "Length Gate",
+      "HR@5": 0.02914872474329248,
+      "HR@10": 0.051010268300761843,
+      "HR@20": 0.09506459092414707,
+      "NDCG@5": 0.017471864572104825,
+      "NDCG@10": 0.02444065301251864,
+      "NDCG@20": 0.03543137086919915,
+      "Oracle Gap (%)": 46.52
+    },
+    {
+      "Model": "Uncertainty Gate (Prior)",
+      "HR@5": 0.034117257369990064,
+      "HR@10": 0.0637628353759523,
+      "HR@20": 0.11328254388870487,
+      "NDCG@5": 0.02100216130415288,
+      "NDCG@10": 0.030433514090202365,
+      "NDCG@20": 0.04270051211568547,
+      "Oracle Gap (%)": 33.41
+    },
+    {
+      "Model": "Proposed Selective Router",
+      "HR@5": 0.03279231533620404,
+      "HR@10": 0.06243789334216628,
+      "HR@20": 0.1156011924478304,
+      "NDCG@5": 0.019679155329883173,
+      "NDCG@10": 0.02916309818483125,
+      "NDCG@20": 0.042508713177038714,
+      "Oracle Gap (%)": 36.19
+    },
+    {
+      "Model": "Oracle Router (Upper Bound)",
+      "HR@5": 0.05399138787678039,
+      "HR@10": 0.09142100033123551,
+      "HR@20": 0.16031798608810865,
+      "NDCG@5": 0.03370563572237761,
+      "NDCG@10": 0.04570286503635593,
+      "NDCG@20": 0.06300626974252507,
+      "Oracle Gap (%)": 0.0
+    }
+  ],
+  "table_2_cold_start_curve": [
+    {
+      "History Length L": 1,
+      "Users": 1500,
+      "Mean U_c": 0.0167,
+      "Mean D_JS": 0.1449,
+      "SASRec HR@10": 0.1693,
+      "Semantic HR@10": 0.0833,
+      "Static Fusion HR@10": 0.1493,
+      "Selective Router HR@10": 0.148,
+      "Oracle Router HR@10": 0.196,
+      "Selective Router NDCG@10": 0.0696
+    },
+    {
+      "History Length L": 2,
+      "Users": 1500,
+      "Mean U_c": 0.0233,
+      "Mean D_JS": 0.1647,
+      "SASRec HR@10": 0.1473,
+      "Semantic HR@10": 0.084,
+      "Static Fusion HR@10": 0.1453,
+      "Selective Router HR@10": 0.1453,
+      "Oracle Router HR@10": 0.178,
+      "Selective Router NDCG@10": 0.0683
+    },
+    {
+      "History Length L": 3,
+      "Users": 1500,
+      "Mean U_c": 0.0289,
+      "Mean D_JS": 0.1769,
+      "SASRec HR@10": 0.1347,
+      "Semantic HR@10": 0.0787,
+      "Static Fusion HR@10": 0.14,
+      "Selective Router HR@10": 0.14,
+      "Oracle Router HR@10": 0.1733,
+      "Selective Router NDCG@10": 0.065
+    },
+    {
+      "History Length L": 5,
+      "Users": 1500,
+      "Mean U_c": 0.034,
+      "Mean D_JS": 0.1959,
+      "SASRec HR@10": 0.162,
+      "Semantic HR@10": 0.0787,
+      "Static Fusion HR@10": 0.16,
+      "Selective Router HR@10": 0.1607,
+      "Oracle Router HR@10": 0.2027,
+      "Selective Router NDCG@10": 0.0802
+    },
+    {
+      "History Length L": 10,
+      "Users": 1500,
+      "Mean U_c": 0.0252,
+      "Mean D_JS": 0.2316,
+      "SASRec HR@10": 0.1313,
+      "Semantic HR@10": 0.092,
+      "Static Fusion HR@10": 0.1507,
+      "Selective Router HR@10": 0.15,
+      "Oracle Router HR@10": 0.188,
+      "Selective Router NDCG@10": 0.075
+    },
+    {
+      "History Length L": 20,
+      "Users": 1500,
+      "Mean U_c": 0.021,
+      "Mean D_JS": 0.2501,
+      "SASRec HR@10": 0.0847,
+      "Semantic HR@10": 0.068,
+      "Static Fusion HR@10": 0.104,
+      "Selective Router HR@10": 0.104,
+      "Oracle Router HR@10": 0.1447,
+      "Selective Router NDCG@10": 0.0489
+    }
+  ],
+  "table_3_controlled_drift_benchmark": [
+    {
+      "Drift Magnitude delta": 0.0,
+      "Mean U_c": 0.0232,
+      "Mean D_JS": 0.2444,
+      "Collaborative Action (%)": 0.0,
+      "Semantic Action (%)": 0.0,
+      "Hybrid Action (%)": 100.0,
+      "Mean Routing Weights [C, S, H]": [
+        0.158,
+        0.133,
+        0.709
+      ]
+    },
+    {
+      "Drift Magnitude delta": 0.2,
+      "Mean U_c": 0.042,
+      "Mean D_JS": 0.1884,
+      "Collaborative Action (%)": 0.0,
+      "Semantic Action (%)": 0.0,
+      "Hybrid Action (%)": 100.0,
+      "Mean Routing Weights [C, S, H]": [
+        0.15,
+        0.131,
+        0.72
+      ]
+    },
+    {
+      "Drift Magnitude delta": 0.4,
+      "Mean U_c": 0.0393,
+      "Mean D_JS": 0.1629,
+      "Collaborative Action (%)": 0.0,
+      "Semantic Action (%)": 0.0,
+      "Hybrid Action (%)": 100.0,
+      "Mean Routing Weights [C, S, H]": [
+        0.147,
+        0.129,
+        0.725
+      ]
+    },
+    {
+      "Drift Magnitude delta": 0.6,
+      "Mean U_c": 0.0371,
+      "Mean D_JS": 0.152,
+      "Collaborative Action (%)": 0.0,
+      "Semantic Action (%)": 0.0,
+      "Hybrid Action (%)": 100.0,
+      "Mean Routing Weights [C, S, H]": [
+        0.145,
+        0.127,
+        0.728
+      ]
+    },
+    {
+      "Drift Magnitude delta": 0.8,
+      "Mean U_c": 0.0341,
+      "Mean D_JS": 0.1449,
+      "Collaborative Action (%)": 0.0,
+      "Semantic Action (%)": 0.0,
+      "Hybrid Action (%)": 100.0,
+      "Mean Routing Weights [C, S, H]": [
+        0.144,
+        0.126,
+        0.73
+      ]
+    }
+  ],
+  "calibration_and_diagnostics": {
+    "ECE": 0.0008,
+    "Brier Score": 0.0066,
+    "NLL": 6.9173,
+    "Mean U_c on HR@10 Hits": 0.0264,
+    "Mean U_c on HR@10 Misses": 0.0286,
+    "Disagreement vs Rank Divergence Correlation": -0.0769,
+    "Reliability Diagram": [
+      {
+        "Bin": "[0.0, 0.1)",
+        "Count": 6038,
+        "Avg Confidence": 0.0075,
+        "Observed Accuracy": 0.0066,
+        "Calibration Gap": 0.0008
+      }
+    ]
+  }
+}

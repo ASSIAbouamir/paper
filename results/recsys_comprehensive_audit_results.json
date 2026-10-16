@@ -1,0 +1,208 @@
+{
+  "oracle": {
+    "oracle_rr_hr10": 0.09307717787346803,
+    "oracle_hit_hr10": 0.09307717787346803,
+    "oracle_rr_ndcg10": 0.04463398483544285,
+    "oracle_rr_mrr": 0.04315146803196114,
+    "absolute_gap": 0.0,
+    "pct_ceiling_captured": 100.0,
+    "action_shares": {
+      "H": 1029,
+      "C": 2986,
+      "S": 2023
+    }
+  },
+  "baselines": {
+    "SASRec Alone": {
+      "hr_at_1": 0.005,
+      "hr_at_5": 0.028,
+      "hr_at_10": 0.0515,
+      "hr_at_20": 0.0967,
+      "ndcg_at_10": 0.0237,
+      "mrr": 0.0255
+    },
+    "Semantic Alone": {
+      "hr_at_1": 0.0043,
+      "hr_at_5": 0.0227,
+      "hr_at_10": 0.0449,
+      "hr_at_20": 0.0815,
+      "ndcg_at_10": 0.0204,
+      "mrr": 0.0217
+    },
+    "Static 50/50 Prob": {
+      "hr_at_1": 0.0068,
+      "hr_at_5": 0.033,
+      "hr_at_10": 0.0641,
+      "hr_at_20": 0.1131,
+      "ndcg_at_10": 0.0295,
+      "mrr": 0.0302
+    },
+    "Static 70/30 Prob": {
+      "hr_at_1": 0.0075,
+      "hr_at_5": 0.0348,
+      "hr_at_10": 0.0601,
+      "hr_at_20": 0.1148,
+      "ndcg_at_10": 0.0287,
+      "mrr": 0.0306
+    },
+    "Static 30/70 Prob": {
+      "hr_at_1": 0.0055,
+      "hr_at_5": 0.0296,
+      "hr_at_10": 0.0593,
+      "hr_at_20": 0.1075,
+      "ndcg_at_10": 0.0266,
+      "mrr": 0.0274
+    },
+    "Static 50/50 PoE": {
+      "hr_at_1": 0.0066,
+      "hr_at_5": 0.0364,
+      "hr_at_10": 0.0725,
+      "hr_at_20": 0.1277,
+      "ndcg_at_10": 0.0325,
+      "mrr": 0.0323
+    },
+    "Static 60/40 PoE": {
+      "hr_at_1": 0.0058,
+      "hr_at_5": 0.0366,
+      "hr_at_10": 0.0719,
+      "hr_at_20": 0.1285,
+      "ndcg_at_10": 0.032,
+      "mrr": 0.032
+    },
+    "Static 70/30 PoE": {
+      "hr_at_1": 0.0068,
+      "hr_at_5": 0.0384,
+      "hr_at_10": 0.0719,
+      "hr_at_20": 0.1272,
+      "ndcg_at_10": 0.0327,
+      "mrr": 0.0326
+    },
+    "Static 80/20 PoE": {
+      "hr_at_1": 0.0065,
+      "hr_at_5": 0.0366,
+      "hr_at_10": 0.0656,
+      "hr_at_20": 0.1206,
+      "ndcg_at_10": 0.0303,
+      "mrr": 0.0313
+    },
+    "Static 30/70 PoE": {
+      "hr_at_1": 0.0061,
+      "hr_at_5": 0.0318,
+      "hr_at_10": 0.0639,
+      "hr_at_20": 0.1209,
+      "ndcg_at_10": 0.0287,
+      "mrr": 0.0296
+    },
+    "Static 40/60 PoE": {
+      "hr_at_1": 0.0065,
+      "hr_at_5": 0.034,
+      "hr_at_10": 0.0689,
+      "hr_at_20": 0.1265,
+      "ndcg_at_10": 0.0309,
+      "mrr": 0.0312
+    },
+    "Random Router (C/S/H)": {
+      "hr_at_1": 0.0043,
+      "hr_at_5": 0.0285,
+      "hr_at_10": 0.0573,
+      "hr_at_20": 0.1,
+      "ndcg_at_10": 0.0254,
+      "mrr": 0.0257
+    },
+    "Disagreement Logit Reranker": {
+      "hr_at_1": 0.0058,
+      "hr_at_5": 0.0373,
+      "hr_at_10": 0.0717,
+      "hr_at_20": 0.128,
+      "ndcg_at_10": 0.0322,
+      "mrr": 0.0322
+    }
+  },
+  "adaptive_poe_5seeds": {
+    "hr_at_10_mean": 0.07201059953627029,
+    "hr_at_10_std": 0.000264988406757204,
+    "ndcg_at_10_mean": 0.03229214812221509,
+    "ndcg_at_10_std": 0.00010492648571422545
+  },
+  "learned_prob_router_5seeds": {
+    "hr_at_10_mean": 0.06283537595230208,
+    "hr_at_10_std": 0.000997013378157825,
+    "ndcg_at_10_mean": 0.029080039526645,
+    "ndcg_at_10_std": 0.00045737989696848126
+  },
+  "statistical_tests": {
+    "n00": 5549,
+    "n01": 102,
+    "n10": 56,
+    "n11": 331,
+    "net_gain": 46,
+    "mcnemar_chi2": 12.816455696202532,
+    "mcnemar_exact_p": 0.0003145679662181671,
+    "wilcoxon_w": 883065.0,
+    "wilcoxon_p": 1.092568435384395e-06
+  },
+  "ablations": {
+    "Router A (All 13 Features)": {
+      "hr_at_10": 0.0717,
+      "ndcg_at_10": 0.0322
+    },
+    "Router B (Uncertainty & Conf only: U_c, U_s, H_c, H_s, Delta_H, M_c, M_s)": {
+      "hr_at_10": 0.0717,
+      "ndcg_at_10": 0.0321
+    },
+    "Router C (Disagreement only: D_JS, Agreement, Margin_Delta)": {
+      "hr_at_10": 0.073,
+      "ndcg_at_10": 0.0328
+    },
+    "Router D (Sequence Dynamics only: L_u, Unique_ratio, Drift)": {
+      "hr_at_10": 0.072,
+      "ndcg_at_10": 0.0321
+    },
+    "Router E (No Disagreement: all except D_JS, Agreement)": {
+      "hr_at_10": 0.0714,
+      "ndcg_at_10": 0.0319
+    },
+    "Router F (No Sequence: all except L_u, Unique, Drift)": {
+      "hr_at_10": 0.0717,
+      "ndcg_at_10": 0.0322
+    },
+    "Router G (Sequence Length Only)": {
+      "hr_at_10": 0.072,
+      "ndcg_at_10": 0.0321
+    }
+  },
+  "routing_quality": {
+    "accuracy": 0.4643921828420007,
+    "balanced_accuracy": 0.3720376550454329,
+    "confusion_matrix": [
+      [
+        2526,
+        0,
+        460
+      ],
+      [
+        1515,
+        0,
+        508
+      ],
+      [
+        751,
+        0,
+        278
+      ]
+    ],
+    "eff_c_mean": 0.5376046299934387,
+    "eff_c_std": 0.010105473920702934,
+    "eff_c_median": 0.5390355587005615,
+    "eff_c_p5": 0.5166336894035339,
+    "eff_c_p95": 0.5514498353004456
+  },
+  "computational_cost": {
+    "params_collab": 286016,
+    "params_semantic": 1471936,
+    "params_router": 611,
+    "latency_static_ms": 0.012541890004649758,
+    "latency_poe_static_ms": 0.008211089996621013,
+    "latency_poe_adaptive_ms": 0.019818060006946324
+  }
+}

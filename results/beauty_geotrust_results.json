@@ -1,0 +1,59 @@
+{
+  "dataset": "Amazon_Beauty_2014_5core",
+  "num_users": 9880,
+  "num_items": 11707,
+  "validation_tuned_params": {
+    "gamma_star": 1.5,
+    "lambda_star": 0.2
+  },
+  "per_seed_results": [
+    {
+      "seed": 42,
+      "poe_hits": 235,
+      "geo_hits": 295,
+      "gain": 60,
+      "rel_gain_pct": 25.53191489361702,
+      "ndcg_poe": 0.011043785620887895,
+      "ndcg_geo": 0.013346766891828982,
+      "rel_ndcg_gain_pct": 20.853187032038132,
+      "n01": 104,
+      "n10": 44,
+      "p_mcnemar": 8.873046763703883e-07
+    },
+    {
+      "seed": 123,
+      "poe_hits": 228,
+      "geo_hits": 283,
+      "gain": 55,
+      "rel_gain_pct": 24.12280701754386,
+      "ndcg_poe": 0.011110749617913515,
+      "ndcg_geo": 0.01365572504595222,
+      "rel_ndcg_gain_pct": 22.905524069550808,
+      "n01": 86,
+      "n10": 31,
+      "p_mcnemar": 3.681441540970094e-07
+    },
+    {
+      "seed": 2024,
+      "poe_hits": 240,
+      "geo_hits": 305,
+      "gain": 65,
+      "rel_gain_pct": 27.083333333333332,
+      "ndcg_poe": 0.011225675490547347,
+      "ndcg_geo": 0.013842641996764734,
+      "rel_ndcg_gain_pct": 23.31232992100138,
+      "n01": 99,
+      "n10": 34,
+      "p_mcnemar": 1.4877260430430536e-08
+    }
+  ],
+  "summary": {
+    "mean_poe_hits": 234.33333333333334,
+    "mean_geo_hits": 294.3333333333333,
+    "std_geo_hits": 8.993825042154693,
+    "mean_net_gain": 60.0,
+    "mean_rel_gain_pct": 25.579351748164736,
+    "mean_ndcg_poe": 0.011126736909782919,
+    "mean_ndcg_geo": 0.013615044644848646
+  }
+}

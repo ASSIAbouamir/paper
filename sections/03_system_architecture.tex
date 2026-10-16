@@ -1,0 +1,134 @@
+% ==============================================================================
+% SECTION 3: SYSTEM ARCHITECTURE & EVIDENCE REPRESENTATION
+% ==============================================================================
+
+\section{System Architecture \& Evidence Representation}
+\label{sec:methodology}
+
+\subsection{Dual Expert Sequential Backbone}
+\label{sec:backbone}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Collaborative Expert (SASRec):} Embeds interaction sequences $\mathcal{S}_u = [v_1, \dots, v_t]$ with learned item embeddings $\mathbf{E}_c \in \mathbb{R}^{(|\mathcal{I}|+1) \times d}$ and positional embeddings $\mathbf{P} \in \mathbb{R}^{L \times d}$, processed via causal multi-head self-attention blocks with dropout ($d=64, n_{\text{heads}}=2, n_{\text{layers}}=2, p_{\text{drop}}=0.20$). Sequences are truncated to the most recent $L=50$ interactions; sequences shorter than 50 are left-padded with token index 0, masked during attention. Backbones are optimized with Adam ($\text{lr} = 10^{-3}$, batch size 128, weight decay $10^{-4}$) using full-catalog Softmax cross-entropy over next-item prediction (where candidate logits $\mathbf{z} \in \mathbb{R}^{|\mathcal{I}|}$ over all 3,628 items are normalized via $p_j = \exp(z_j)/\sum_k \exp(z_k)$, ensuring $\sum_{j=1}^{|\mathcal{I}|} p_j = 1$), with early stopping patience of 10 epochs on validation NDCG@10.
+    \item \textbf{Semantic Sequential Expert (MiniLM + Attention):} For each movie item, the input text is formatted as \texttt{"Title: \{title\}. Genres: \{genres\}."} and encoded via the frozen Sentence-Transformers \texttt{all-MiniLM-L6-v2} model into 384-dimensional semantic embeddings $\mathbf{S} \in \mathbb{R}^{(|\mathcal{I}|+1) \times 384}$, projected through a trainable linear layer $\mathbf{W}_s \in \mathbb{R}^{384 \times d}$, followed by causal multi-head self-attention with identical dimensions ($d=64, n_{\text{heads}}=2, n_{\text{layers}}=2, p_{\text{drop}}=0.20$). Left-padding, truncation ($L=50$), and full-catalog Softmax training hyperparameters mirror SASRec.
+\end{enumerate}
+
+\subsection{Information-Theoretic Evidence Descriptors \& 13D Evidence Vector}
+\label{sec:evidence_features}
+
+For each user sequence prefix $\mathcal{S}_u = [v_1, \dots, v_t]$, the system executes $K_{\text{MC}} = 5$ Monte-Carlo Dropout passes over all $|\mathcal{I}| = 3{,}628$ catalog items with $p_{\text{drop}} = 0.20$ kept active at inference time. From forward stochastic distributions $\bar{p}_c, \bar{p}_s$, we extract a \textbf{13-dimensional evidence vector} $\mathbf{x}_u \in \mathbb{R}^{13}$ capturing predictive confidence, epistemic uncertainty, cross-expert conflict, and sequence trajectory dynamics:
+\begin{enumerate}[leftmargin=*]
+    \item $U_c$ (Collaborative Epistemic Uncertainty): Mutual information $I(y; \mathbf{W}_c \mid \mathcal{S}_u) = H(\bar{p}_c) - \frac{1}{K_{\text{MC}}}\sum_{k=1}^{K_{\text{MC}}} H(p_c^{(k)})$.
+    \item $U_s$ (Semantic Epistemic Uncertainty): Mutual information $I(y; \mathbf{W}_s \mid \mathcal{S}_u) = H(\bar{p}_s) - \frac{1}{K_{\text{MC}}}\sum_{k=1}^{K_{\text{MC}}} H(p_s^{(k)})$.
+    \item $D_{\text{JS}}$ (Cross-View Disagreement): Symmetric Jensen-Shannon divergence $D_{\text{JS}}(\bar{p}_c \parallel \bar{p}_s) = \frac{1}{2} D_{\text{KL}}(\bar{p}_c \parallel \bar{m}) + \frac{1}{2} D_{\text{KL}}(\bar{p}_s \parallel \bar{m})$, with $\bar{m} = \frac{1}{2}(\bar{p}_c + \bar{p}_s)$.
+    \item $H_c$ (Collaborative Predictive Entropy): Total Shannon entropy $H(\bar{p}_c) = -\sum_{j=1}^{|\mathcal{I}|} \bar{p}_c(j) \log \bar{p}_c(j)$ (in nats).
+    \item $H_s$ (Semantic Predictive Entropy): Total Shannon entropy $H(\bar{p}_s) = -\sum_{j=1}^{|\mathcal{I}|} \bar{p}_s(j) \log \bar{p}_s(j)$ (in nats).
+    \item $\Delta H$ (Entropy Differential): Absolute difference $|H_c - H_s|$.
+    \item $L_u / 50$ (Normalized Sequence Length): Truncated sequence interaction count scaled to $[0, 1]$.
+    \item Item Unique Ratio: Ratio of unique item interactions in history $\frac{|\text{unique}(\mathcal{S}_u)|}{|\mathcal{S}_u|}$.
+    \item Semantic Session Drift: Cosine distance $1 - \cos(\mathbf{e}_{\text{recent}}, \mathbf{e}_{\text{past}})$ between average semantic embeddings of the last 3 items and preceding interactions.
+    \item $M_c$ (Collaborative Margin): Difference between top-1 and top-2 predicted collaborative probabilities $\bar{p}_{c,(1)} - \bar{p}_{c,(2)}$.
+    \item $M_s$ (Semantic Margin): Difference between top-1 and top-2 predicted semantic probabilities $\bar{p}_{s,(1)} - \bar{p}_{s,(2)}$.
+    \item Top-1 Agreement Indicator: Binary flag $\mathbf{1}[\arg\max_j \bar{p}_c(j) = \arg\max_j \bar{p}_s(j)]$.
+    \item $L_u$ (Raw Sequence Length): Unscaled integer count of interactions in $\mathcal{S}_u$.
+\end{enumerate}
+
+\subsection{5D Evidence Sub-Vector, Blending, and Functional Routing States}
+\label{sec:blending}
+
+For initial baseline routing investigation, the standard router operates on a canonical 5-dimensional summary sub-vector:
+\begin{equation}
+    \mathbf{x}_u^{(5D)} = \big[ H_c(u),\, H_s(u),\, L_u/50,\, M_c(u),\, M_s(u) \big]^T \in \mathbb{R}^5
+\end{equation}
+The network outputs simplex weights $\mathbf{w}_u = (w_C, w_S, w_H)$ ($w_C + w_S + w_H = 1$). Because $p_h = \frac{1}{2}p_c + \frac{1}{2}p_s$, the blended probability score over item $j \in \mathcal{I}$ factorizes as:
+\begin{equation}
+    p_{\text{routed}}(u) = \left(w_C + \frac{1}{2} w_H\right) p_c + \left(w_S + \frac{1}{2} w_H\right) p_s = \text{Eff}_C p_c + (1 - \text{Eff}_C) p_s
+\end{equation}
+where $\text{Eff}_C \triangleq w_C + \frac{1}{2} w_H$ and $\text{Eff}_S \triangleq 1 - \text{Eff}_C$. Consequently, the continuous mixture output is functionally one-dimensional, parameterized strictly by the scalar difference $w_C - w_S$.
+
+\subsubsection{Mathematical Non-Identifiability of Simplex Weights}
+Because $p_h$ is linearly dependent on $p_c$ and $p_s$, any triple $(w_C, w_S, w_H)$ satisfying $w_C - w_S = 2\,\text{Eff}_C - 1$ produces the exact same output probability distribution and identical candidate rankings. Therefore, $(w_C, w_S, w_H)$ is \textbf{mathematically non-identifiable} from the final recommendation slate.
+To prevent treating an over-parameterized artifact as an empirical finding, we define the functional routing state via the scalar effective weight $\text{Eff}_C(u)$ with an indifference margin $\epsilon = 0.05$:
+\begin{equation}
+    \hat{a}_{\text{functional}}(u) \triangleq \begin{cases} C & \text{if } \text{Eff}_C(u) > 0.5 + \epsilon \\ H & \text{if } |\text{Eff}_C(u) - 0.5| \le \epsilon \\ S & \text{if } \text{Eff}_C(u) < 0.5 - \epsilon \end{cases}
+\end{equation}
+Across all $6{,}038$ test users, $\text{Eff}_C$ exhibits tight concentration around stationary 50/50: $\text{mean} = 0.514 \pm 0.004$, $\text{range} = [0.485, 0.519]$. For any $\epsilon \ge 0.02$, \textbf{100.00\% of all test sequences fall strictly within the neutral compromise band $H$}, confirming that collapse to $H$ is a mathematically robust property of learned weights rather than an arbitrary choice of $\epsilon$.
+
+\subsection{Comprehensive Anti-Leakage Protocol \& Three-Stage Lifecycle}
+\label{sec:anti_leakage}
+
+To ensure complete empirical validity, we enforce five anti-leakage pillars:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Strict Temporal Chronology Separation:} For every user $u$, interactions are ordered chronologically: $[v_1, \dots, v_{t-2}]$ forms training prefix $\mathcal{S}_u^{\text{train}}$, $v_{t-1}$ is the validation target for checkpointing and hyperparameter tuning, and $v_t$ is strictly sealed for blind testing.
+    \item \textbf{User-Level Out-of-Fold (OOF) Cross-Fitting:} Training sequences are partitioned into $K=5$ disjoint user folds via deterministic hashing. Backbones trained on $K-1$ folds generate out-of-fold evidence vectors $\mathbf{x}_u$ exclusively for the held-out fold, ensuring router training cannot exploit backbone memorization.
+    \item \textbf{Strict Checkpoint Isolation:} Models are evaluated directly on the sealed test interaction $v_t$ without retraining on combined train+validation data.
+    \item \textbf{Frozen Representations:} Both expert backbones are trained independently and completely frozen prior to router training.
+    \item \textbf{Strictly Post-hoc Oracle:} Oracle labels $a^*(u) = \arg\max_{a \in \{C, S, H\}} \text{RR}_a(u)$ are evaluated strictly post-hoc on the test split as an analytical diagnostic comparator.
+\end{enumerate}
+
+\subsection{Multi-Dataset Specifications and Sequential Filtering}
+\label{sec:datasets}
+
+To assess architectural robustness across distinct topological regimes, we evaluate across four empirical ecosystems categorized by statistical evaluation power:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Primary High-Powered Benchmarks ($N \ge 6{,}040$, Minimum Detectable Effect $\text{MDE} \approx 20$ hits):}
+    \begin{itemize}
+        \item \textbf{MovieLens-1M:} Cinematic sequential benchmark ($|\mathcal{U}| = 6{,}040, |\mathcal{I}| = 3{,}628$, $1{,}000{,}209$ ratings, $96.28\%$ sparsity) with rich title and genre metadata.
+        \item \textbf{Amazon Beauty (5-Core):} E-commerce care benchmark ($|\mathcal{U}| = 9{,}880, |\mathcal{I}| = 11{,}707$, $81{,}767$ interactions, $99.85\%$ sparsity) with detailed product metadata (Title + Brand + Category) encoded by \texttt{all-MiniLM-L6-v2} (384d).
+    \end{itemize}
+    \item \textbf{Exploratory Diagnostic Stress-Test ($N = 1{,}411$, extreme sparsity / low-signal regime):}
+    \begin{itemize}
+        \item \textbf{KuaiRec Micro-Video:} High-velocity mobile video streaming ($|\mathcal{U}| = 1{,}411, |\mathcal{I}| = 3{,}327$, $209{,}500$ sequential interactions, $95.53\%$ sparsity) under rapid topic shifting.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Bilateral Cross-Attentive Architecture with Geometric Discrepancy Regularization (BiX-GDR)}
+\label{sec:bix_gdr}
+
+To overcome the arithmetic simplex bottleneck of late-stage score routing—where scalar blending cannot resolve candidate-level uncertainty—we introduce \textbf{BiX-GDR} (Gated Bilateral Cross-Attention with Geometric Discrepancy Regularization). Rather than isolating representations until the final scoring layer, BiX-GDR enables collaborative and semantic representations to reciprocally contextualize each other through intermediate Transformer layers while preventing semantic noise injection on sparse trajectories.
+
+\subsubsection{Bilateral Cross-Attention Blocks}
+Let $\mathbf{h}_c^{(l)}, \mathbf{h}_s^{(l)} \in \mathbb{R}^{L \times d}$ denote the collaborative and semantic hidden state sequences at layer $l \in \{1, \dots, N_{\text{layers}}\}$. In each block, representations undergo causal self-attention followed by bilateral cross-attention:
+\begin{align}
+    \tilde{\mathbf{h}}_c &= \mathbf{h}_c^{(l)} + \text{Dropout}(\text{MHA}_{\text{self}}(\text{LN}(\mathbf{h}_c^{(l)}), \text{LN}(\mathbf{h}_c^{(l)}), \text{LN}(\mathbf{h}_c^{(l)}))) \\
+    \tilde{\mathbf{h}}_s &= \mathbf{h}_s^{(l)} + \text{Dropout}(\text{MHA}_{\text{self}}(\text{LN}(\mathbf{h}_s^{(l)}), \text{LN}(\mathbf{h}_s^{(l)}), \text{LN}(\mathbf{h}_s^{(l)})))
+\end{align}
+Next, bilateral cross-attention queries semantic representations from collaborative states, and vice versa:
+\begin{align}
+    \mathbf{C}_{c \leftarrow s} &= \text{MHA}_{\text{cross}}(Q = \text{LN}(\tilde{\mathbf{h}}_c), K = \text{LN}(\tilde{\mathbf{h}}_s), V = \text{LN}(\tilde{\mathbf{h}}_s)) \\
+    \mathbf{C}_{s \leftarrow c} &= \text{MHA}_{\text{cross}}(Q = \text{LN}(\tilde{\mathbf{h}}_s), K = \text{LN}(\tilde{\mathbf{h}}_c), V = \text{LN}(\tilde{\mathbf{h}}_c))
+\end{align}
+
+\subsubsection{Adaptive Information Injection Gates}
+On sparse sequences, unconstrained cross-modal residuals ($h + C$) risk injecting semantic hallucinations into behavioral patterns. We formulate dynamic information injection gates:
+\begin{align}
+    \mathbf{g}_c &= \sigma\big(\mathbf{W}_c [\text{LN}(\tilde{\mathbf{h}}_c) \,\|\, \mathbf{C}_{c \leftarrow s}] + \mathbf{b}_c\big) \in (0, 1)^{L \times d} \\
+    \mathbf{g}_s &= \sigma\big(\mathbf{W}_s [\text{LN}(\tilde{\mathbf{h}}_s) \,\|\, \mathbf{C}_{s \leftarrow c}] + \mathbf{b}_s\big) \in (0, 1)^{L \times d}
+\end{align}
+The modulated representations update via gated residual addition followed by feed-forward networks:
+\begin{align}
+    \mathbf{h}_c^{(l+1)} &= \tilde{\mathbf{h}}_c + \text{Dropout}(\mathbf{g}_c \odot \mathbf{C}_{c \leftarrow s}) + \text{FFN}_c(\text{LN}(\tilde{\mathbf{h}}_c + \mathbf{g}_c \odot \mathbf{C}_{c \leftarrow s})) \\
+    \mathbf{h}_s^{(l+1)} &= \tilde{\mathbf{h}}_s + \text{Dropout}(\mathbf{g}_s \odot \mathbf{C}_{s \leftarrow c}) + \text{FFN}_s(\text{LN}(\tilde{\mathbf{h}}_s + \mathbf{g}_s \odot \mathbf{C}_{s \leftarrow c}))
+\end{align}
+
+\subsubsection{Cross-Modal Contrastive Alignment Objective}
+To prevent modality collapse and ensure joint embedding geometry, we introduce an auxiliary sequence-level InfoNCE alignment loss between the collaborative and semantic sequence representations:
+\begin{equation}
+    \mathcal{L}_{\text{align}} = -\sum_{u \in \mathcal{B}} \log \frac{\exp\big(\cos(\mathbf{u}_c, \mathbf{u}_s) / \tau\big)}{\sum_{u' \in \mathcal{B}} \exp\big(\cos(\mathbf{u}_c, \mathbf{u}_{s}') / \tau\big)}
+\end{equation}
+where $\tau$ is a temperature hyperparameter and $\mathcal{B}$ denotes the training minibatch. This pulls collaborative and semantic representations of the same user trajectory into mutual geometric alignment.
+
+\subsubsection{Unified Candidate-Level Geometric Discrepancy Regularization}
+From final layer representations at sequence terminus $t$, we extract user state vectors $\mathbf{u}_c = \mathbf{h}_{c, t}^{(N)}$ and $\mathbf{u}_s = \mathbf{h}_{s, t}^{(N)}$. For every candidate item $i \in \mathcal{I}$, collaborative and semantic scores are computed as:
+\begin{equation}
+    S_c(u, i) = \mathbf{u}_c^\top \mathbf{e}_c(i), \quad S_s(u, i) = \mathbf{u}_s^\top \mathbf{e}_s(i)
+\end{equation}
+BiX-GDR synthesizes candidate scores using an adaptive balance $w = \sigma(\alpha)$ and a learned non-negative geometric discrepancy penalty:
+\begin{equation}
+    S_{\text{BiX-GDR}}(u, i) = w S_c(u, i) + (1-w) S_s(u, i) - \lambda(u) \cdot |S_c(u, i) - S_s(u, i)|
+\end{equation}
+where $\lambda(u) = \lambda_0 \cdot \sigma(\mathbf{w}_\lambda^\top \mathbf{x}_u + b_\lambda) \ge 0$ dynamically modulates penalty intensity according to sequence uncertainty. The total end-to-end training loss optimizes:
+\begin{equation}
+    \mathcal{L}_{\text{total}} = \mathcal{L}_{\text{CE}}(S_{\text{BiX-GDR}}, y^*) + \beta \mathcal{L}_{\text{align}} + \gamma \|\Theta\|_2^2
+\end{equation}
+This directly links representation-level bilateral cross-attention with candidate-level geometric penalization, suppressing false-positive tail intrusions while preserving rich cross-modal contextualization.

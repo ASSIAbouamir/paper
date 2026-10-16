@@ -1,0 +1,165 @@
+{
+    "ablation_components": {
+        "(1) Baseline SASRec (Collaboratif pur)": {
+            "HR@10": 0.274,
+            "NDCG@10": 0.162,
+            "Cold_HR@10": 0.138,
+            "ILD@10": 0.405,
+            "CatCov": 0.245,
+            "delta_hr": "+0.00%",
+            "delta_cold": "+0.00%",
+            "description": "Baseline pure ID Transformer"
+        },
+        "(2) + LLM Embeddings (Fusion lin\u00e9aire statique)": {
+            "HR@10": 0.292,
+            "NDCG@10": 0.175,
+            "Cold_HR@10": 0.182,
+            "ILD@10": 0.418,
+            "CatCov": 0.289,
+            "delta_hr": "+6.57%",
+            "delta_cold": "+31.88%",
+            "description": "Apport s\u00e9mantique fig\u00e9 basique"
+        },
+        "(3) + Standard Length Gate": {
+            "HR@10": 0.318,
+            "NDCG@10": 0.194,
+            "Cold_HR@10": 0.245,
+            "ILD@10": 0.435,
+            "CatCov": 0.362,
+            "delta_hr": "+16.06%",
+            "delta_cold": "+77.54%",
+            "description": "Modulation selon la longueur d'historique"
+        },
+        "(4) + InfoNCE Contrastive Loss (sans LoRA)": {
+            "HR@10": 0.324,
+            "NDCG@10": 0.198,
+            "Cold_HR@10": 0.252,
+            "ILD@10": 0.438,
+            "CatCov": 0.375,
+            "delta_hr": "+18.25%",
+            "delta_cold": "+82.61%",
+            "description": "Alignement g\u00e9om\u00e9trique inter-modal"
+        },
+        "(5) + LoRA LLM Adapter (q/v proj)": {
+            "HR@10": 0.342,
+            "NDCG@10": 0.212,
+            "Cold_HR@10": 0.276,
+            "ILD@10": 0.449,
+            "CatCov": 0.398,
+            "delta_hr": "+24.82%",
+            "delta_cold": "+100.00%",
+            "description": "Adaptation fine active du LLM"
+        },
+        "(6) + Multi-Scale Semantic Gate (MSC-Gate)": {
+            "HR@10": 0.349,
+            "NDCG@10": 0.219,
+            "Cold_HR@10": 0.286,
+            "ILD@10": 0.452,
+            "CatCov": 0.405,
+            "delta_hr": "+27.37%",
+            "delta_cold": "+107.25%",
+            "description": "Modulation par coh\u00e9rence s\u00e9mantique historique"
+        },
+        "(7) + Listwise Softmax Ranking Loss": {
+            "HR@10": 0.354,
+            "NDCG@10": 0.224,
+            "Cold_HR@10": 0.294,
+            "ILD@10": 0.455,
+            "CatCov": 0.412,
+            "delta_hr": "+29.20%",
+            "delta_cold": "+113.04%",
+            "description": "Optimisation top-k sur hard negatives min\u00e9s"
+        },
+        "(8) Mod\u00e8le Complet (+ AC-MMR + Popularity De-bias)": {
+            "HR@10": 0.347,
+            "NDCG@10": 0.218,
+            "Cold_HR@10": 0.288,
+            "ILD@10": 0.612,
+            "CatCov": 0.504,
+            "delta_hr": "+26.64%",
+            "delta_cold": "+108.70%",
+            "description": "\u00c9quilibre optimal Pr\u00e9cision-Diversit\u00e9-Couverture"
+        }
+    },
+    "lora_rank_sensitivity": {
+        "Rank r=4 (q,v proj)": {
+            "HR@10": 0.329,
+            "NDCG@10": 0.201,
+            "Cold_HR@10": 0.261,
+            "params_ratio": "0.15%"
+        },
+        "Rank r=8 (q,v proj)": {
+            "HR@10": 0.342,
+            "NDCG@10": 0.212,
+            "Cold_HR@10": 0.276,
+            "params_ratio": "0.29%"
+        },
+        "Rank r=8 (All-Attention q,k,v,o)": {
+            "HR@10": 0.348,
+            "NDCG@10": 0.218,
+            "Cold_HR@10": 0.284,
+            "params_ratio": "0.58%"
+        },
+        "Rank r=16 (All-Attention)": {
+            "HR@10": 0.354,
+            "NDCG@10": 0.224,
+            "Cold_HR@10": 0.294,
+            "params_ratio": "1.16%"
+        },
+        "Rank r=32 (All-Attention)": {
+            "HR@10": 0.351,
+            "NDCG@10": 0.221,
+            "Cold_HR@10": 0.29,
+            "params_ratio": "2.32%"
+        }
+    },
+    "coherence_sensitivity": {
+        "gamma_0 = 0.00 (Pure Coherence Gate)": {
+            "HR@10": 0.345,
+            "Cold_HR@10": 0.281,
+            "impact": "Trop sensible aux sessions courtes"
+        },
+        "gamma_0 = 0.25": {
+            "HR@10": 0.35,
+            "Cold_HR@10": 0.289,
+            "impact": "Bon \u00e9quilibre"
+        },
+        "gamma_0 = 0.50 (Valeur par d\u00e9faut)": {
+            "HR@10": 0.354,
+            "Cold_HR@10": 0.294,
+            "impact": "Optimum global stable"
+        },
+        "gamma_0 = 0.75": {
+            "HR@10": 0.349,
+            "Cold_HR@10": 0.285,
+            "impact": "Sous-exploitation de la coh\u00e9rence"
+        },
+        "gamma_0 = 1.00 (Sans Modulation Coherence)": {
+            "HR@10": 0.342,
+            "Cold_HR@10": 0.276,
+            "impact": "\u00c9quivalent gate classique"
+        }
+    },
+    "length_bucket_analysis": {
+        "Bucket 1: L <= 3 (Extr\u00eame Cold-Start)": {
+            "SASRec_HR": 0.082,
+            "Hybrid_LoRA_HR": 0.258,
+            "Gain": "+214.6%"
+        },
+        "Bucket 2: 4 <= L <= 7 (Cold-Start mod\u00e9r\u00e9)": {
+            "SASRec_HR": 0.178,
+            "Hybrid_LoRA_HR": 0.312,
+            "Gain": "+75.3%"
+        },
+        "Bucket 3: 8 <= L <= 15 (Transition)": {
+            "SASRec_HR": 0.285,
+            "Hybrid_LoRA_HR": 0.356,
+            "Gain": "+24.9%"
+        },
+        "Bucket 4: L > 15 (Warm Users)": {
+            "SASRec_HR": 0.342,
+            "Hybrid_LoRA_HR": 0.388,
+            "Gain": "+13.5%"
+        }
+    }
+}

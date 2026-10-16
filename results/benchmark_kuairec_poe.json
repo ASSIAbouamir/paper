@@ -1,0 +1,138 @@
+{
+  "dataset": "KuaiRec Micro-Video",
+  "num_users": 1411,
+  "num_items": 3327,
+  "N_test": 1411,
+  "per_seed_results": [
+    {
+      "seed": 42,
+      "sasrec_hits": 5,
+      "semantic_hits": 4,
+      "blend_hits": 2,
+      "static_poe_hits": 4,
+      "cc_poe_hits": 4,
+      "oracle_hits": 10,
+      "delta_vs_poe": 0,
+      "contingency_vs_poe": {
+        "n00": 1407,
+        "n01": 0,
+        "n10": 0,
+        "n11": 4,
+        "p_exact": 1.0
+      },
+      "oracle_counts": {
+        "C": 665,
+        "S": 621,
+        "H": 125,
+        "Total": 1411
+      },
+      "oracle_shares_pct": {
+        "C": 47.13,
+        "S": 44.01,
+        "H": 8.86
+      }
+    },
+    {
+      "seed": 123,
+      "sasrec_hits": 7,
+      "semantic_hits": 5,
+      "blend_hits": 4,
+      "static_poe_hits": 3,
+      "cc_poe_hits": 4,
+      "oracle_hits": 12,
+      "delta_vs_poe": 1,
+      "contingency_vs_poe": {
+        "n00": 1406,
+        "n01": 2,
+        "n10": 1,
+        "n11": 2,
+        "p_exact": 1.0
+      },
+      "oracle_counts": {
+        "C": 636,
+        "S": 631,
+        "H": 144,
+        "Total": 1411
+      },
+      "oracle_shares_pct": {
+        "C": 45.07,
+        "S": 44.72,
+        "H": 10.21
+      }
+    },
+    {
+      "seed": 2024,
+      "sasrec_hits": 3,
+      "semantic_hits": 3,
+      "blend_hits": 3,
+      "static_poe_hits": 2,
+      "cc_poe_hits": 2,
+      "oracle_hits": 7,
+      "delta_vs_poe": 0,
+      "contingency_vs_poe": {
+        "n00": 1407,
+        "n01": 2,
+        "n10": 2,
+        "n11": 0,
+        "p_exact": 1.0
+      },
+      "oracle_counts": {
+        "C": 606,
+        "S": 650,
+        "H": 155,
+        "Total": 1411
+      },
+      "oracle_shares_pct": {
+        "C": 42.95,
+        "S": 46.07,
+        "H": 10.99
+      }
+    }
+  ],
+  "means_and_stds_3seeds": {
+    "sasrec": {
+      "mean": 5.0,
+      "std": 2.0,
+      "hr10_mean": 0.003543586109142452,
+      "hr10_std": 0.001417434443656981
+    },
+    "semantic": {
+      "mean": 4.0,
+      "std": 1.0,
+      "hr10_mean": 0.002834868887313962,
+      "hr10_std": 0.0007087172218284905
+    },
+    "blend": {
+      "mean": 3.0,
+      "std": 1.0,
+      "hr10_mean": 0.002126151665485471,
+      "hr10_std": 0.0007087172218284905
+    },
+    "static_poe": {
+      "mean": 3.0,
+      "std": 1.0,
+      "hr10_mean": 0.002126151665485471,
+      "hr10_std": 0.0007087172218284905
+    },
+    "cc_poe": {
+      "mean": 3.3333333333333335,
+      "std": 1.1547005383792515,
+      "hr10_mean": 0.0023623907394283014,
+      "hr10_std": 0.0008183561576040053
+    },
+    "oracle": {
+      "mean": 9.666666666666666,
+      "std": 2.5166114784235836,
+      "hr10_mean": 0.006850933144342074,
+      "hr10_std": 0.001783565895410052
+    }
+  },
+  "mean_oracle_distribution_3seeds": {
+    "C_count_mean": 635.6666666666666,
+    "S_count_mean": 634.0,
+    "H_count_mean": 141.33333333333334,
+    "C_pct_mean": 45.05,
+    "S_pct_mean": 44.93,
+    "H_pct_mean": 10.02
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "framework": "Selective Evidence Routing for Sequential Recommendation",
+  "dataset": "MovieLens-1M",
+  "seeds": [
+    42,
+    123,
+    2024,
+    7,
+    99
+  ],
+  "symmetric_multiseed_benchmark": [
+    {
+      "Model": "SASRec",
+      "Seed 42": "0.0242 / 0.0119",
+      "Seed 123": "0.0253 / 0.0116",
+      "Seed 2024": "0.0230 / 0.0112",
+      "Seed 7": "0.0235 / 0.0108",
+      "Seed 99": "0.0222 / 0.0110",
+      "HR@10 (Mean +- Std)": "0.0237 +- 0.0011",
+      "NDCG@10 (Mean +- Std)": "0.0113 +- 0.0004",
+      "NDCG@10 Oracle Gap (%)": "59.68%"
+    },
+    {
+      "Model": "Semantic Expert",
+      "Seed 42": "0.0368 / 0.0175",
+      "Seed 123": "0.0333 / 0.0148",
+      "Seed 2024": "0.0318 / 0.0162",
+      "Seed 7": "0.0308 / 0.0149",
+      "Seed 99": "0.0296 / 0.0140",
+      "HR@10 (Mean +- Std)": "0.0325 +- 0.0025",
+      "NDCG@10 (Mean +- Std)": "0.0155 +- 0.0013",
+      "NDCG@10 Oracle Gap (%)": "44.63%"
+    },
+    {
+      "Model": "Static Fusion",
+      "Seed 42": "0.0399 / 0.0185",
+      "Seed 123": "0.0358 / 0.0157",
+      "Seed 2024": "0.0373 / 0.0176",
+      "Seed 7": "0.0349 / 0.0161",
+      "Seed 99": "0.0368 / 0.0166",
+      "HR@10 (Mean +- Std)": "0.0369 +- 0.0017",
+      "NDCG@10 (Mean +- Std)": "0.0169 +- 0.0010",
+      "NDCG@10 Oracle Gap (%)": "39.55%"
+    },
+    {
+      "Model": "Length Gate (Audited)",
+      "Seed 42": "0.0308 / 0.0142",
+      "Seed 123": "0.0295 / 0.0133",
+      "Seed 2024": "0.0287 / 0.0138",
+      "Seed 7": "0.0280 / 0.0126",
+      "Seed 99": "0.0287 / 0.0135",
+      "HR@10 (Mean +- Std)": "0.0291 +- 0.0010",
+      "NDCG@10 (Mean +- Std)": "0.0135 +- 0.0005",
+      "NDCG@10 Oracle Gap (%)": "51.88%"
+    },
+    {
+      "Model": "Scalar Uncertainty Baseline",
+      "Seed 42": "0.0394 / 0.0184",
+      "Seed 123": "0.0354 / 0.0154",
+      "Seed 2024": "0.0363 / 0.0173",
+      "Seed 7": "0.0333 / 0.0160",
+      "Seed 99": "0.0335 / 0.0156",
+      "HR@10 (Mean +- Std)": "0.0356 +- 0.0022",
+      "NDCG@10 (Mean +- Std)": "0.0166 +- 0.0011",
+      "NDCG@10 Oracle Gap (%)": "40.85%"
+    },
+    {
+      "Model": "Selective Router",
+      "Seed 42": "0.0396 / 0.0186",
+      "Seed 123": "0.0349 / 0.0155",
+      "Seed 2024": "0.0369 / 0.0175",
+      "Seed 7": "0.0336 / 0.0153",
+      "Seed 99": "0.0343 / 0.0159",
+      "HR@10 (Mean +- Std)": "0.0359 +- 0.0022",
+      "NDCG@10 (Mean +- Std)": "0.0166 +- 0.0013",
+      "NDCG@10 Oracle Gap (%)": "40.82%"
+    },
+    {
+      "Model": "Oracle Router",
+      "Seed 42": "0.0619 / 0.0304",
+      "Seed 123": "0.0605 / 0.0277",
+      "Seed 2024": "0.0565 / 0.0284",
+      "Seed 7": "0.0558 / 0.0270",
+      "Seed 99": "0.0538 / 0.0264",
+      "HR@10 (Mean +- Std)": "0.0577 +- 0.0030",
+      "NDCG@10 (Mean +- Std)": "0.0280 +- 0.0014",
+      "NDCG@10 Oracle Gap (%)": "0.00%"
+    }
+  ],
+  "natural_preference_drift": {
+    "Median Natural Semantic Drift Distance": 0.1721,
+    "Stable Cohort": {
+      "Users": 3019,
+      "Mean Uc": 0.00364,
+      "SASRec HR@10": 0.0202,
+      "Static Fusion HR@10": 0.0344,
+      "Selective Router HR@10": 0.0338
+    },
+    "Drifting Cohort (Natural Intent Shift)": {
+      "Users": 3019,
+      "Mean Uc": 0.00367,
+      "SASRec HR@10": 0.0242,
+      "Static Fusion HR@10": 0.0391,
+      "Selective Router HR@10": 0.0348
+    }
+  }
+}

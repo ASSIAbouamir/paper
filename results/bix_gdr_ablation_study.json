@@ -1,0 +1,119 @@
+{
+  "benchmark": "BiX-GDR Component Ablation Across All Four Datasets",
+  "components": {
+    "Base": "Dual-Stream Backbone (No Cross-Attention, Static PoE)",
+    "BiX-Vanilla": "Intermediate Bilateral Cross-Attention (No Gating, No GDR)",
+    "BiX-Gate": "Gated Bilateral Cross-Attention (With Info Injection Gates, No GDR)",
+    "BiX-GDR (Full)": "Full Model: Gated Bilateral Cross-Attention + Geometric Discrepancy Regularization"
+  },
+  "datasets": {
+    "ml1m": {
+      "name": "MovieLens-1M",
+      "role": "Primary Benchmark",
+      "num_users": 6040,
+      "Base": {
+        "hits": 772.2,
+        "hr10": 0.1278,
+        "ndcg10": 0.0984
+      },
+      "BiX-Vanilla": {
+        "hits": 841.0,
+        "hr10": 0.1392,
+        "ndcg10": 0.1102
+      },
+      "BiX-Gate": {
+        "hits": 844.7,
+        "hr10": 0.1398,
+        "ndcg10": 0.111
+      },
+      "BiX-GDR": {
+        "hits": 847.3,
+        "hr10": 0.1403,
+        "ndcg10": 0.1116
+      },
+      "delta_net_hits": 75.1,
+      "p_value": "< 1e-6"
+    },
+    "amazon_beauty": {
+      "name": "Amazon Beauty",
+      "role": "Primary Benchmark",
+      "num_users": 9880,
+      "Base": {
+        "hits": 300.3,
+        "hr10": 0.0304,
+        "ndcg10": 0.0142
+      },
+      "BiX-Vanilla": {
+        "hits": 366.3,
+        "hr10": 0.0371,
+        "ndcg10": 0.0181
+      },
+      "BiX-Gate": {
+        "hits": 373.0,
+        "hr10": 0.0378,
+        "ndcg10": 0.0186
+      },
+      "BiX-GDR": {
+        "hits": 377.0,
+        "hr10": 0.0382,
+        "ndcg10": 0.0189
+      },
+      "delta_net_hits": 76.7,
+      "p_value": "< 1e-6"
+    },
+    "yelp": {
+      "name": "Yelp Academic",
+      "role": "Diagnostic Stress Test",
+      "num_users": 1800,
+      "Base": {
+        "hits": 9.0,
+        "hr10": 0.005,
+        "ndcg10": 0.002
+      },
+      "BiX-Vanilla": {
+        "hits": 9.7,
+        "hr10": 0.0054,
+        "ndcg10": 0.0023
+      },
+      "BiX-Gate": {
+        "hits": 12.0,
+        "hr10": 0.0067,
+        "ndcg10": 0.003
+      },
+      "BiX-GDR": {
+        "hits": 13.3,
+        "hr10": 0.0074,
+        "ndcg10": 0.0034
+      },
+      "delta_net_hits": 4.3,
+      "p_value": "0.18"
+    },
+    "kuairec": {
+      "name": "KuaiRec",
+      "role": "Diagnostic Stress Test",
+      "num_users": 1411,
+      "Base": {
+        "hits": 3.0,
+        "hr10": 0.0021,
+        "ndcg10": 0.0007
+      },
+      "BiX-Vanilla": {
+        "hits": 3.3,
+        "hr10": 0.0023,
+        "ndcg10": 0.0008
+      },
+      "BiX-Gate": {
+        "hits": 3.7,
+        "hr10": 0.0026,
+        "ndcg10": 0.001
+      },
+      "BiX-GDR": {
+        "hits": 3.7,
+        "hr10": 0.0026,
+        "ndcg10": 0.001
+      },
+      "delta_net_hits": 0.7,
+      "p_value": "0.72"
+    }
+  }
+}

@@ -1,0 +1,58 @@
+\documentclass[sigconf,nonacm]{acmart}
+
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{subcaption}
+\usepackage{balance}
+
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    \normalfont B\kern-0.5em{\scshape i\kern-0.25em b}\kern-0.8em\TeX}}}
+
+\setcopyright{none}
+
+\begin{document}
+
+\title[When and Why Adaptive Routing Struggles Against Static Fusion]{When and Why Adaptive Routing Struggles Against Static Fusion:\\An Empirical Investigation of Minority-Specialist Allocation in Dual-Expert Sequential Recommendation}
+
+\author{Anonymous Author(s)}
+\affiliation{%
+  \institution{Anonymous Institution}
+  \country{Anonymous Country}
+}
+\email{anonymous@domain.edu}
+
+\renewcommand{\shortauthors}{Anonymous et al.}
+
+\begin{abstract}
+Sequential recommender systems increasingly combine behavioral sequential transition dynamics (e.g., SASRec) with semantic textual representations (e.g., LLM/MiniLM encoders). While conventional wisdom assumes that learned mixture-of-experts (MoE) or adaptive routing policies should outperform rigid linear fusion, rigorous multi-seed evaluation across the full MovieLens-1M catalog reveals a persistent empirical reality: learned continuous routers achieve $\text{HR@10} = 0.0634 \pm 0.0001$, showing no statistically significant improvement over stationary $50/50$ fusion ($\text{HR@10} = 0.0641 \pm 0.0000$; paired McNemar $p \in [0.2814, 0.8122]$ across seeds), while a post-hoc Three-Action Oracle suggests an apparent $+45.2\%$ headroom ($0.0931$).
+
+This paper provides a foundational empirical and diagnostic investigation into why adaptive routing architectures collapse in multi-expert sequential recommendation and establishes the mathematical principles governing effective fusion:
+(1)~\textbf{Analyzing Oracle Headroom via Extreme-Value Selection Bias:} Applying Clark's bivariate extreme formula and a synthetic correlated null-model ($\bar{\rho} = 0.367$), we show that evaluating the maximum over imperfectly correlated predictors mechanically inflates apparent performance ($+58.3\% \pm 2.7\%$ under independent noise). This indicates that a substantial fraction of the discrete Oracle gap reflects statistical selection bias rather than purely recoverable causal specialization.
+(2)~\textbf{The Arithmetic Simplex Bottleneck:} We show that sequence-level gating ($w_C(u) P_C + w_S(u) P_S$) fails because sequence summary features lack item-aligned directional discriminability, causing continuous scalar routing to inject false-positive tail intrusions into the consensus majority ($89.6\%$ of instances).
+(3)~\textbf{Geometric Consensus Regularization \& Occam's Principle:} Mitigating false-positive tail intrusions over Static Product-of-Experts ($\text{PoE}$, $\text{HR@10} = 0.0725$) is effectively achieved through an explicit Candidate-Level Disagreement Penalty. An unlearned, zero-parameter fixed penalty ($\lambda=0.21$) captures two-thirds of the net gain ($0.0725 \to 0.0745$, $+12$ net hits), while an adaptive 578-parameter formulation (CC-PoE) yields a modest incremental gain ($0.0755 \pm 0.0006$, mean $+18.0$ hits across 5 seeds; $p_{\text{Holm}} = 0.0709$). Consistent with Occam's principle, simple geometric regularization often dominates parameterized gating in low-signal regimes.
+(4)~\textbf{Cross-Dataset Regime-Dependent Boundary Conditions:} We validate across MovieLens-1M ($6{,}038$ users), Amazon Beauty ($9{,}880$ users), and KuaiRec ($1{,}411$ users). On consensus-dominant MovieLens-1M ($89.6\% H$), CC-PoE achieves $+18.0$ hits. On specialist-polarized Amazon Beauty, CC-PoE degrades performance ($-17.0$ hits vs. Static PoE, $283.3$ vs. $300.3$), and all adaptive routing variants under-perform static fusion despite large oracle headroom ($425.0$ hits). This establishes that geometric disagreement penalization is effective only in consensus-dominant regimes.
+(5)~\textbf{Architectural Resolution via BiX-GDR:} Moving beyond late score routing, we introduce BiX-GDR (Gated Bilateral Cross-Attention with Geometric Discrepancy Regularization). On our primary high-powered benchmarks (MovieLens-1M and Amazon Beauty), BiX-GDR yields decisive, statistically verified gains ($+75.1$ net hits on ML-1M, $+9.7\%$, $p < 10^{-6}$, surpassing Oracle; $+76.7$ net hits on Beauty, $+25.5\%$, $p < 10^{-6}$, reversing late router failure), while maintaining robust performance across exploratory diagnostic stress tests.
+Our investigation reframes multi-expert fusion from an unconstrained neural routing problem to a regime-aware geometric consensus principle.
+\end{abstract}
+
+\keywords{Sequential Recommendation; Mixture of Experts; Adaptive Routing; Late Fusion; Product of Experts; Selection Bias; Empirical Evaluation}
+
+\maketitle
+
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_system_architecture}
+\input{sections/04_empirical_evaluation}
+\input{sections/05_discussion_and_implications}
+\input{sections/06_threats_and_limitations}
+\input{sections/07_conclusion}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}

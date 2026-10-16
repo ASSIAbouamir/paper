@@ -1,0 +1,54 @@
+{
+  "1. Full GeoTrust-Rec": {
+    "variant": "1. Full GeoTrust-Rec",
+    "hits_per_seed": [
+      465,
+      464,
+      467
+    ],
+    "mean_hits": 465.3333333333333,
+    "std_hits": 1.247219128924647,
+    "mean_hr10": 0.07706746163188694,
+    "mean_ndcg10": 0.03511194010973661,
+    "net_gain_vs_poe": 27.333333333333314
+  },
+  "2. w/o Bilinear (Seq-Level Only)": {
+    "variant": "2. w/o Bilinear (Seq-Level Only)",
+    "hits_per_seed": [
+      460,
+      467,
+      454
+    ],
+    "mean_hits": 460.3333333333333,
+    "std_hits": 5.312459150169743,
+    "mean_hr10": 0.07623937286077068,
+    "mean_ndcg10": 0.03380870978749812,
+    "net_gain_vs_poe": 22.333333333333314
+  },
+  "3. w/o Trust-Region (Unconstrained)": {
+    "variant": "3. w/o Trust-Region (Unconstrained)",
+    "hits_per_seed": [
+      466,
+      461,
+      470
+    ],
+    "mean_hits": 465.6666666666667,
+    "std_hits": 3.6817870057290873,
+    "mean_hr10": 0.07712266754996135,
+    "mean_ndcg10": 0.034965117692978005,
+    "net_gain_vs_poe": 27.666666666666686
+  },
+  "4. w/o Disagreement Penalty": {
+    "variant": "4. w/o Disagreement Penalty",
+    "hits_per_seed": [
+      451,
+      436,
+      442
+    ],
+    "mean_hits": 443.0,
+    "std_hits": 6.164414002968976,
+    "mean_hr10": 0.07336866512090096,
+    "mean_ndcg10": 0.034224582874759456,
+    "net_gain_vs_poe": 5.0
+  }
+}

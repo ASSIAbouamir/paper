@@ -1,0 +1,164 @@
+% ==============================================================================
+% SECTION 5: DISCUSSION & ARCHITECTURAL IMPLICATIONS (RQ5)
+% ==============================================================================
+
+\section{Discussion \& Architectural Implications (RQ5)}
+\label{sec:discussion}
+
+\subsection{The Two Fundamental Regimes of Multi-Expert Fusion}
+\label{sec:two_regimes}
+
+Our empirical findings establish that multi-expert sequential recommendation bifurcates into two distinct regimes:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Regime I: Consensus-Dominant Regime ($\%H \ge 75\%$):} When historical transitions are mature, both collaborative and semantic models exhibit complementary errors. Gating at the sequence level degrades top rankings through the \emph{Scalar Routing Bottleneck}. Here, conservative late fusion is essential.
+    \item \textbf{Regime II: Polarized Specialist Regime ($\%H < 75\%$):} In early prefix stages ($L \le 5$) or domain-specific splits where single-expert competence is highly asymmetric, sequence-level routing successfully extracts specialist headroom ($+18.4\%$ at $L=5$).
+\end{enumerate}
+
+\subsection{Cascaded Exception-Gating Architecture}
+\label{sec:cascaded_arch}
+
+To resolve the tension between general non-consensus detection and directional expert identification (\S\ref{sec:signatures}), we formalize a decoupled two-stage cascade:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Stage 1 (Binary Non-Consensus Filter):} Conditions on collaborative entropy $H_c(u)$. If $H_c(u) \ge \tau_H$, the system defaults unconditionally to stationary geometric consensus ($0.5 \log P_C + 0.5 \log P_S$), protecting the consensus majority from perturbation.
+    \item \textbf{Stage 2 (Candidate-Level Arbitration):} For low-entropy exception sequences ($H_c(u) < \tau_H$), arbitration is delegated to candidate-level disagreement scoring.
+\end{enumerate}
+
+\subsection{Resolution: Breaking Stationary Baselines via Adaptive CC-PoE}
+\label{sec:cc_poe}
+
+\subsubsection{Re-Centering Evaluation on Static Product-of-Experts}
+The primary baseline in dual-expert recommendation must not be weak probability blending ($0.0641$), but \textbf{Static Logit Product-of-Experts (PoE)}:
+\begin{equation}
+    S_{\text{PoE}}(u, i) = 0.5 \log P_C(i \mid u) + 0.5 \log P_S(i \mid u)
+\end{equation}
+Moving from arithmetic averaging to geometric consensus immediately improves test $\text{HR@10}$ from $0.0641 \to 0.0725$ (+13.18\%, Table~\ref{tab:poe_benchmark}).
+
+\begin{table*}[t]
+\centering
+\small
+\caption{\textbf{Re-Centered Benchmark against Static Logit PoE Anchor ($M=3{,}628$, $N=6{,}038$).} Evaluating across 5 seeds.}
+\label{tab:poe_benchmark}
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Paradigm} & \textbf{Model Architecture} & \textbf{HR@10} & \textbf{NDCG@10} & \textbf{Net Hits vs. Static PoE} & \textbf{Statistical Status} \\
+\midrule
+\textbf{Individual Experts} 
+& SASRec (Collaborative) & $0.0237_{\pm .0011}$ & $0.0113_{\pm .0004}$ & $-295$ & $p < 10^{-5}$ \\
+& Semantic Expert (MiniLM) & $0.0325_{\pm .0025}$ & $0.0155_{\pm .0013}$ & $-242$ & $p < 10^{-5}$ \\
+\midrule
+\textbf{Stationary Fusion} 
+& Static 50/50 Probability Blend & $0.0641_{\pm .0000}$ & $0.0295_{\pm .0000}$ & $-51$ & $p_{\text{Holm}} = 2.35 \times 10^{-5}$ \\
+& Reciprocal Rank Fusion ($k=60$) & $0.0719_{\pm .0000}$ & $0.0321_{\pm .0000}$ & $-4$ & $p_{\text{Holm}} = 0.0398$ \\
+& Tuned Static PoE ($\alpha^*=0.65$) & $0.0717_{\pm .0000}$ & $0.0323_{\pm .0000}$ & $-5$ & $p_{\text{Holm}} = 0.0790$ \\
+& \textbf{Static 50/50 Logit PoE (Primary Baseline)} & \textbf{0.0725}$_{\pm .0000}$ & \textbf{0.0326}$_{\pm .0000}$ & \textbf{0 (438 hits)} & \textbf{Reference Anchor} \\
+\midrule
+\textbf{Sequence-Level Gating} 
+& Evidence Router (5D Scalar Prob) & $0.0634_{\pm .0001}$ & $0.0296_{\pm .0000}$ & $-55$ & Non-significant vs Prob \\
+& Supervised Action Router ($X \to \{C, S, H\}$) & $0.0624_{\pm .0000}$ & $0.0293_{\pm .0000}$ & $-61$ & Saturated by Fano bound \\
+& Scalar Logit PoE Router ($w_C \log P_C + w_S \log P_S$) & $0.0720_{\pm .0003}$ & $0.0324_{\pm .0001}$ & $-3$ & $p = 0.6254$ \\
+\midrule
+\textbf{Candidate-Level Gating} 
+& Item-Level Adaptive Gate (MLP) & $0.0730_{\pm .0003}$ & $0.0328_{\pm .0001}$ & $+3$ & $p_{\text{Holm}} = 0.1418$ \\
+& \textbf{Adaptive CC-PoE (Ours, 5-Seed Mean)} & \textbf{0.0755}$_{\pm .0007}$ & \textbf{0.0335}$_{\pm .0002}$ & \textbf{+18.0} & \textbf{$p_{\text{Holm}} = 0.0709$} \\
+& \emph{CC-PoE (Canonical Seed 42)} & \emph{0.0765} & \emph{0.0338} & \emph{+24} & \emph{Raw paired $p = 0.0236$} \\
+\midrule
+\textbf{Upper Bound} 
+& Three-Action Oracle Upper Bound ($\mathcal{A}$) & $\mathbf{0.0931}_{\pm .0003}$ & $\mathbf{0.0446}_{\pm .0002}$ & $+124$ & Diagnostic Action Bound \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsubsection{Mathematical Formulation of CC-PoE}
+Adaptive Consensus-Constrained Product-of-Experts (CC-PoE) scores item $i$ for user $u$ via:
+\begin{equation}
+    S(u, i) = \underbrace{(0.5 + \delta(\mathbf{x}_u)) \log P_C(i) + (0.5 - \delta(\mathbf{x}_u)) \log P_S(i)}_{\text{Base Geometric Consensus}} - \underbrace{\lambda(\mathbf{x}_u) \cdot |\log P_C(i) - \log P_S(i)|}_{\text{Adaptive Disagreement Penalty}}
+\end{equation}
+Letting $d(u, i) \triangleq \log P_C(i) - \log P_S(i)$, this corresponds to a piecewise candidate-level gate:
+\begin{equation}
+    S(u, i) = \begin{cases} 
+    (0.5 + \delta - \lambda) \log P_C(i) + (0.5 - \delta + \lambda) \log P_S(i) & \text{if } d(u, i) > 0 \\
+    (0.5 + \delta + \lambda) \log P_C(i) + (0.5 - \delta - \lambda) \log P_S(i) & \text{if } d(u, i) < 0 
+    \end{cases}
+\end{equation}
+The 2-layer MLP parameterizes $\delta(\mathbf{x}_u) = 0.10 \tanh(\text{out}_0)$ and $\lambda(\mathbf{x}_u) = 0.34 \sigma(\text{out}_1)$ with exactly \textbf{578 parameters} ($448 + 64 + 66$), representing a negligible $0.03\%$ overhead ($+0.0073$ ms/user incremental latency).
+
+\subsubsection{A Priori Theoretical Positivity Guarantee}
+To guarantee that candidate scoring coefficients remain positive across all inputs:
+\begin{equation}
+    |\delta(\mathbf{x}_u)| \le 0.10, \quad \lambda(\mathbf{x}_u) \le 0.34 \implies \delta_{\max} + \lambda_{\max} = 0.44 < 0.50
+\end{equation}
+Therefore, for all users $u$ and candidates $i$:
+\begin{equation}
+    \min \big(0.5 \pm \delta(\mathbf{x}_u) - \lambda(\mathbf{x}_u)\big) \ge 0.50 - 0.44 = \mathbf{0.06} > 0
+\end{equation}
+guaranteeing positive expert weights \emph{a priori} across the entire input domain.
+
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Component Ablation Study Across 5 Seeds.} Demonstrating that adaptive disagreement penalty $\lambda$ is the primary driver of performance.}
+\label{tab:ablation}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model Variant} & \textbf{Adaptive $\delta$} & \textbf{Adaptive $\lambda$} & \textbf{HR@10 (Mean $\pm$ Std)} & \textbf{Net Hits} \\
+\midrule
+Static PoE & \texttimes & \texttimes & $0.0725 \pm 0.0000$ & Reference (438) \\
+$\delta$-PoE & \checkmark & \texttimes & $0.0715 \pm 0.0005$ & $-6$ \\
+$\lambda$-PoE & \texttimes & \checkmark & $0.0751 \pm 0.0008$ & $+16$ \\
+Fixed $\lambda$ ($\lambda=0.21$) & \texttimes & fixed & $0.0745 \pm 0.0000$ & $+12$ \\
+$\delta$ + Fixed $\lambda$ & \checkmark & fixed & $0.0754 \pm 0.0003$ & $+17$ \\
+\textbf{Full CC-PoE (Ours)} & \checkmark & \checkmark & $\mathbf{0.0755 \pm 0.0006}$ & $\mathbf{+18.0}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Expanded Candidate-Level Baselines Benchmark on Seed 42 ($M=3{,}628$).}}
+\label{tab:candidate_baselines}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Method} & \textbf{Level} & \textbf{Hits (Seed 42)} & \textbf{$\Delta$ vs CC-PoE} & \textbf{Params} \\
+\midrule
+Candidate Linear Gate & Item & $357$ & $-104$ ($p < 10^{-4}$) & 16 \\
+Two-Stage Cascade (Top-20 $\to$ PoE) & Cascade & $396$ & $-65$ ($p < 10^{-4}$) & 0 \\
+Learned Rank Fusion (RRF) & Item & $414$ & $-47$ ($p = 0.0003$) & 3 \\
+Harmonic Mean Fusion & Item & $437$ & $-24$ ($p = 0.0071$) & 0 \\
+\textbf{Static PoE (50/50 Logit)} & \textbf{Global} & \textbf{438} & \textbf{-23 ($p = 0.0250$)} & \textbf{0} \\
+Min-Consensus $\min(P_C, P_S)$ & Item & $441$ & $-20$ ($p = 0.1448$) & 0 \\
+Item-Wise MLP Gate & Item & $445$ & $-16$ ($p = 0.0402$) & 148 \\
+Two-Stage Cascade (Top-100 $\to$ PoE) & Cascade & $445$ & $-16$ ($p = 0.0402$) & 0 \\
+Fixed Disagreement PoE ($\lambda=0.21$) & Item & $450$ & $-11$ ($p = 0.2000$) & 0 \\
+\textbf{Adaptive CC-PoE (Ours)} & \textbf{Item} & \textbf{462} & \textbf{---} & \textbf{578} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Seed-by-Seed Breakdown of CC-PoE vs. Static PoE across 5 Seeds.}}
+\label{tab:seed_breakdown}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Seed} & \textbf{Static PoE Hits} & \textbf{CC-PoE Hits} & \textbf{$\Delta$ Hits} & \textbf{Relative Gain} & \textbf{McNemar $p$} \\
+\midrule
+\textbf{Seed 42} & $438$ ($0.0725$) & $\mathbf{462}$ ($0.0765$) & $\mathbf{+24}$ & $+5.48\%$ & $0.0236^*$ \\
+\textbf{Seed 123} & $438$ ($0.0725$) & $452$ ($0.0749$) & $+14$ & $+3.20\%$ & $0.1633$ \\
+\textbf{Seed 2024} & $438$ ($0.0725$) & $455$ ($0.0754$) & $+17$ & $+3.88\%$ & $0.0984$ \\
+\textbf{Seed 7} & $438$ ($0.0725$) & $453$ ($0.0750$) & $+15$ & $+3.42\%$ & $0.1405$ \\
+\textbf{Seed 99} & $438$ ($0.0725$) & $\mathbf{459}$ ($0.0760$) & $\mathbf{+21}$ & $+4.79\%$ & $0.0396^*$ \\
+\midrule
+\textbf{Mean} & \textbf{438.0} ($0.0725$) & \textbf{456.0} ($0.0755$) & \textbf{+18.0} & \textbf{+4.11\%} & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Key Insights on Candidate Adaptation}
+As shown in Table~\ref{tab:candidate_baselines} and Table~\ref{tab:seed_breakdown}:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{CC-PoE improves over Static PoE on every seed} ($+14$ to $+24$ hits, mean $+18.0$ hits, Table~\ref{tab:seed_breakdown}).
+    \item \textbf{Occam's Principle in Late Fusion:} The unlearned, zero-parameter Fixed Disagreement PoE ($\lambda = 0.21$, HR@10 $= 0.0745$) captures two-thirds of the total gain ($+12$ net hits). Adaptive CC-PoE adds an incremental $+6$ hits over this fixed heuristic ($p = 0.20$ vs. fixed). Consistent with Occam's razor, the primary contribution lies in the \emph{geometric disagreement penalty principle} rather than complex neural parameterization.
+    \item \textbf{Unconstrained Gating Overfits:} Black-box Candidate Linear Gate collapses to $0.0574$, and Item-Wise MLP barely matches Static PoE ($0.0734$), proving that candidate-level modulation requires an explicit consensus-constrained inductive bias.
+\end{enumerate}

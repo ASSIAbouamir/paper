@@ -1,0 +1,161 @@
+{
+  "benchmark_summary": {
+    "dataset": "MovieLens-1M",
+    "num_users": 6038,
+    "num_items": 3628,
+    "protocol": "Full-Catalog Leave-One-Out, No Negative Sampling"
+  },
+  "comprehensive_model_comparison": {
+    "SASRec": {
+      "hr_at_1": 0.005,
+      "hr_at_5": 0.028,
+      "hr_at_10": 0.0515,
+      "hr_at_20": 0.0967,
+      "ndcg_at_5": 0.0162,
+      "ndcg_at_10": 0.0237,
+      "ndcg_at_20": 0.035,
+      "mrr": 0.0255
+    },
+    "SemanticExpert": {
+      "hr_at_1": 0.0043,
+      "hr_at_5": 0.0227,
+      "hr_at_10": 0.0449,
+      "hr_at_20": 0.0815,
+      "ndcg_at_5": 0.0134,
+      "ndcg_at_10": 0.0204,
+      "ndcg_at_20": 0.0296,
+      "mrr": 0.0217
+    },
+    "StaticProbabilityBlend_50_50": {
+      "hr_at_1": 0.0068,
+      "hr_at_5": 0.033,
+      "hr_at_10": 0.0641,
+      "hr_at_20": 0.1131,
+      "ndcg_at_5": 0.0195,
+      "ndcg_at_10": 0.0295,
+      "ndcg_at_20": 0.0418,
+      "mrr": 0.0302
+    },
+    "StaticLogitPoE_50_50": {
+      "hr_at_1": 0.0066,
+      "hr_at_5": 0.0364,
+      "hr_at_10": 0.0725,
+      "hr_at_20": 0.1277,
+      "ndcg_at_5": 0.0209,
+      "ndcg_at_10": 0.0325,
+      "ndcg_at_20": 0.0463,
+      "mrr": 0.0323
+    },
+    "AdaptivePoERouter_MultiSeedMean": {
+      "hr_at_1": {
+        "mean": 0.0065,
+        "std": 0.0001,
+        "ci95": 0.0001
+      },
+      "hr_at_5": {
+        "mean": 0.0376,
+        "std": 0.0002,
+        "ci95": 0.0002
+      },
+      "hr_at_10": {
+        "mean": 0.072,
+        "std": 0.0003,
+        "ci95": 0.0002
+      },
+      "hr_at_20": {
+        "mean": 0.1276,
+        "std": 0.0006,
+        "ci95": 0.0005
+      },
+      "ndcg_at_5": {
+        "mean": 0.0213,
+        "std": 0.0,
+        "ci95": 0.0
+      },
+      "ndcg_at_10": {
+        "mean": 0.0323,
+        "std": 0.0001,
+        "ci95": 0.0001
+      },
+      "ndcg_at_20": {
+        "mean": 0.0463,
+        "std": 0.0001,
+        "ci95": 0.0001
+      },
+      "mrr": {
+        "mean": 0.0324,
+        "std": 0.0001,
+        "ci95": 0.0001
+      }
+    }
+  },
+  "statistical_significance": {
+    "comparison": "Adaptive PoE Router vs Static Probability Blend (50/50)",
+    "contingency_matrix": {
+      "n00_both_miss": 5549,
+      "n01_router_hit_static_miss": 102,
+      "n10_static_hit_router_miss": 56,
+      "n11_both_hit": 331
+    },
+    "net_user_gain": 46,
+    "mcnemar_chi2": 12.8165,
+    "mcnemar_exact_p_value": 0.0003145679662181671,
+    "wilcoxon_ndcg10_statistic": 883065.0,
+    "wilcoxon_ndcg10_p_value": 1.092568435384395e-06
+  },
+  "stratified_history_length_analysis": {
+    "short_history_L_le_10": {
+      "num_users": 11,
+      "static_prob_hr10": 0.0,
+      "poe_router_hr10": 0.0,
+      "relative_gain_pct": NaN,
+      "static_prob_ndcg10": 0.0,
+      "poe_router_ndcg10": 0.0
+    },
+    "medium_history_10_lt_L_le_30": {
+      "num_users": 1140,
+      "static_prob_hr10": 0.1088,
+      "poe_router_hr10": 0.1132,
+      "relative_gain_pct": 4.03,
+      "static_prob_ndcg10": 0.0495,
+      "poe_router_ndcg10": 0.0511
+    },
+    "long_history_L_gt_30": {
+      "num_users": 4887,
+      "static_prob_hr10": 0.0538,
+      "poe_router_hr10": 0.0622,
+      "relative_gain_pct": 15.59,
+      "static_prob_ndcg10": 0.0249,
+      "poe_router_ndcg10": 0.0279
+    }
+  },
+  "stratified_disagreement_analysis": {
+    "high_disagreement": {
+      "num_users": 3019,
+      "static_prob_hr10": 0.0715,
+      "poe_router_hr10": 0.0825,
+      "relative_gain_pct": 15.28
+    },
+    "low_disagreement": {
+      "num_users": 3019,
+      "static_prob_hr10": 0.0566,
+      "poe_router_hr10": 0.0609,
+      "relative_gain_pct": 7.6
+    }
+  },
+  "feature_sensitivity_permutation_importance": {
+    "Epistemic Uncertainty Collab (U_c)": -0.0005,
+    "Epistemic Uncertainty Semantic (U_s)": -0.00017,
+    "Jensen-Shannon Disagreement (D_JS)": 0.0005,
+    "Predictive Entropy Collab (H_c)": -0.00017,
+    "Predictive Entropy Semantic (H_s)": -0.00033,
+    "Entropy Delta (|H_c - H_s|)": -0.00017,
+    "Sequence Length (L_u)": -0.00017,
+    "Unique Item Ratio": 0.0,
+    "Semantic Drift Magnitude": 0.0,
+    "Confidence Margin Collab (M_c)": -0.00017,
+    "Confidence Margin Semantic (M_s)": -0.00017,
+    "Top-1 Prediction Agreement": 0.0,
+    "Margin Delta (|M_c - M_s|)": 0.0
+  }
+}

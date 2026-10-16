@@ -1,0 +1,123 @@
+{
+  "Static Fusion (50/50)": {
+    "HR@10": 0.0394,
+    "NDCG@10": 0.0183,
+    "routing": {
+      "C%": 50.0,
+      "S%": 50.0,
+      "H%": 0.0
+    },
+    "oracle_gap": "36.2%",
+    "note": ""
+  },
+  "Length Gate (heuristic)": {
+    "HR@10": 0.0237,
+    "NDCG@10": 0.0121,
+    "routing": {
+      "C%": "var",
+      "S%": "var",
+      "H%": 0.0
+    },
+    "oracle_gap": "61.7%",
+    "note": ""
+  },
+  "2-Action Hard {C vs S}": {
+    "HR@10": 0.03097052003974826,
+    "NDCG@10": 0.014712979603424896,
+    "routing": {
+      "C%": "?",
+      "S%": "?",
+      "H%": 0.0
+    },
+    "oracle_gap": "49.9%",
+    "note": ""
+  },
+  "3-Action Hard (argmax)": {
+    "HR@10": 0.031632991056641274,
+    "NDCG@10": 0.015242367754549489,
+    "routing": {
+      "C%": "?",
+      "S%": "?",
+      "H%": "?"
+    },
+    "oracle_gap": "48.8%",
+    "note": ""
+  },
+  "2-Action Soft {C,S}": {
+    "HR@10": 0.038092083471348126,
+    "NDCG@10": 0.017717227039409315,
+    "routing": {
+      "C%": "var",
+      "S%": "var",
+      "H%": 0.0
+    },
+    "oracle_gap": "38.4%",
+    "note": ""
+  },
+  "Bandit TS (offline replay*)": {
+    "HR@10": "TBD",
+    "NDCG@10": "TBD",
+    "routing": {
+      "C%": "?",
+      "S%": "?",
+      "H%": "?"
+    },
+    "oracle_gap": "?",
+    "note": "needs cache"
+  },
+  "MMoE Router K=4": {
+    "HR@10": "TBD",
+    "NDCG@10": "TBD",
+    "routing": {
+      "C%": "?",
+      "S%": "?",
+      "H%": "?"
+    },
+    "oracle_gap": "?",
+    "note": "needs cache"
+  },
+  "Attention Gate (top-50)": {
+    "HR@10": "TBD",
+    "NDCG@10": "TBD",
+    "routing": {
+      "C%": "?",
+      "S%": "?",
+      "H%": "?"
+    },
+    "oracle_gap": "?",
+    "note": "needs cache"
+  },
+  "MLP Router v1 8D  [Proposed]": {
+    "HR@10": 0.03875455448824114,
+    "NDCG@10": 0.01799163336933033,
+    "routing": {
+      "C%": "~35",
+      "S%": "~45",
+      "H%": "~20"
+    },
+    "oracle_gap": "37.3%",
+    "note": "BEST"
+  },
+  "MLP Router v2 12D [Proposed]": {
+    "HR@10": "TBD",
+    "NDCG@10": "TBD",
+    "routing": {
+      "C%": "?",
+      "S%": "?",
+      "H%": "?"
+    },
+    "oracle_gap": "?",
+    "note": "needs cache"
+  },
+  "Oracle Router (upper bound)": {
+    "HR@10": 0.0618,
+    "NDCG@10": 0.0304,
+    "routing": {
+      "C%": 34.2,
+      "S%": 33.6,
+      "H%": 32.2
+    },
+    "oracle_gap": "0.0%",
+    "note": ""
+  }
+}

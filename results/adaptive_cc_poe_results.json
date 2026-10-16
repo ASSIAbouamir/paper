@@ -1,0 +1,43 @@
+{
+  "model_name": "Adaptive Consensus-Constrained Product-of-Experts Router (CC-PoE)",
+  "dataset": "MovieLens-1M",
+  "num_users": 6038,
+  "num_items": 3628,
+  "protocol": "Strict Chronological Leave-One-Out, Full Catalog Ranking Without Negative Sampling",
+  "five_seed_results": {
+    "seed_42": { "hr_at_10": 0.076515, "ndcg_at_10": 0.033538, "hits": 462 },
+    "seed_123": { "hr_at_10": 0.075687, "ndcg_at_10": 0.033532, "hits": 457 },
+    "seed_456": { "hr_at_10": 0.076515, "ndcg_at_10": 0.033779, "hits": 462 },
+    "seed_789": { "hr_at_10": 0.077012, "ndcg_at_10": 0.033896, "hits": 465 },
+    "seed_2024": { "hr_at_10": 0.075522, "ndcg_at_10": 0.033268, "hits": 456 }
+  },
+  "aggregate_metrics": {
+    "hr_at_10_mean": 0.076250,
+    "hr_at_10_std": 0.000560,
+    "hr_at_10_ci95": 0.000491,
+    "ndcg_at_10_mean": 0.033603,
+    "ndcg_at_10_std": 0.000216,
+    "ndcg_at_10_ci95": 0.000189
+  },
+  "comparisons": {
+    "vs_static_prob_blend_0_0641": {
+      "relative_gain_pct": 18.97,
+      "net_user_gain": 75,
+      "mcnemar_chi2": 36.40,
+      "mcnemar_p_value": 1.6e-9
+    },
+    "vs_static_poe_0_0725": {
+      "relative_gain_pct": 5.11,
+      "net_user_gain": 24,
+      "mcnemar_chi2": 5.0865,
+      "mcnemar_p_value": 0.023646,
+      "wilcoxon_ndcg_p_value": 0.00504
+    }
+  },
+  "contingency_matrix_vs_static_poe": {
+    "n00": 5536,
+    "n01_cc_poe_hit_static_poe_miss": 64,
+    "n10_static_poe_hit_cc_poe_miss": 40,
+    "n11": 398
+  }
+}
