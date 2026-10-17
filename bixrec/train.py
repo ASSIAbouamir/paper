@@ -115,9 +115,21 @@ def train_model(model: SeqRec, train, val, dev, cfg) -> Tuple[dict, int, float]:
     g = torch.Generator().manual_seed(cfg["seed"])
     best, best_state, best_ep, bad = -1.0, None, 0, 0
     t0 = time.time()
+    start_ep, ckpt = 1, cfg.get("ckpt")
+    if ckpt and os.path.exists(ckpt):  # resume an interrupted run exactly where it stopped
+        c = torch.load(ckpt, weights_only=False)
+        model.load_state_dict(c["model"])
+        opt.load_state_dict(c["opt"])
+        g.set_state(c["gen"])
+        torch.set_rng_state(c["torch_rng"])
+        np.random.set_state(c["np_rng"])
+        random.setstate(c["py_rng"])
+        best, best_state, best_ep, bad, start_ep = c["best"], c["best_state"], c["best_ep"], c["bad"], c["ep"] + 1
+        t0 -= c["elapsed"]
+        print(f"resumed from epoch {c['ep']}", flush=True)
     loss_kind = cfg.get("loss", "ce")
     positions = cfg.get("positions", "all")
-    for ep in range(1, cfg["epochs"] + 1):
+    for ep in range(start_ep, cfg["epochs"] + 1):
         model.train()
         # length-bucketed batches: shuffle, sort within chunks of 50 batches by length, shuffle batch order
         perm = torch.randperm(len(inp), generator=g)
@@ -169,6 +181,12 @@ def train_model(model: SeqRec, train, val, dev, cfg) -> Tuple[dict, int, float]:
                   f"NDCG@10 {m['NDCG@10']:.4f} best@{best_ep} ({time.time() - t0:.0f}s)", flush=True)
         if bad >= cfg["patience"] and ep >= cfg.get("min_epochs", 0):
             break
+        if ckpt:
+            torch.save({"model": model.state_dict(), "opt": opt.state_dict(), "gen": g.get_state(),
+                        "torch_rng": torch.get_rng_state(), "np_rng": np.random.get_state(),
+                        "py_rng": random.getstate(), "best": best, "best_state": best_state,
+                        "best_ep": best_ep, "bad": bad, "ep": ep, "elapsed": time.time() - t0}, ckpt + ".tmp")
+            os.replace(ckpt + ".tmp", ckpt)
     model.load_state_dict(best_state)
     return best_state, best_ep, time.time() - t0
 
@@ -295,6 +313,9 @@ def main():
     cfg.update({k: v for k, v in vcfg.items() if k in ("loss", "positions")})
     train, val, test = make_splits(ds["user_seqs"], cfg["max_len"])
     model = build_model(ds, emb, vcfg, cfg).to(dev)
+    run_dir = os.path.join(run_root, a.variant, f"seed{a.seed}")
+    os.makedirs(run_dir, exist_ok=True)
+    cfg["ckpt"] = os.path.join(run_dir, "ckpt.pt")
     state, best_ep, secs = train_model(model, train, val, dev, cfg)
     r_val = evaluate(model, val, dev)
     r_test = evaluate(model, test, dev)
@@ -306,8 +327,10 @@ def main():
     if model.kind == "dual":
         w, lam = model.fusion_params()
         metrics["fusion_w"], metrics["fusion_lambda"] = w.item(), lam.item()
-    save_run(os.path.join(run_root, a.variant, f"seed{a.seed}"), metrics,
-             {"val": r_val, "test": r_test, "test_masked": r_test_m}, state)
+    metrics["config"].pop("ckpt", None)
+    save_run(run_dir, metrics, {"val": r_val, "test": r_test, "test_masked": r_test_m}, state)
+    if os.path.exists(cfg["ckpt"]):
+        os.remove(cfg["ckpt"])
     print(json.dumps({"variant": a.variant, "seed": a.seed, "test": metrics["test"]}, indent=1))
 
 
