@@ -167,7 +167,7 @@ def train_model(model: SeqRec, train, val, dev, cfg) -> Tuple[dict, int, float]:
         if cfg["verbose"]:
             print(f"ep {ep:3d} loss {tot / max(nb, 1):.4f} val HR@10 {m['HR@10']:.4f} "
                   f"NDCG@10 {m['NDCG@10']:.4f} best@{best_ep} ({time.time() - t0:.0f}s)", flush=True)
-        if bad >= cfg["patience"]:
+        if bad >= cfg["patience"] and ep >= cfg.get("min_epochs", 0):
             break
     model.load_state_dict(best_state)
     return best_state, best_ep, time.time() - t0
@@ -256,6 +256,7 @@ def main():
     ap.add_argument("--out", default="runs")
     ap.add_argument("--epochs", type=int, default=200)
     ap.add_argument("--patience", type=int, default=20)
+    ap.add_argument("--min_epochs", type=int, default=20, help="no early stopping before this epoch")
     ap.add_argument("--batch", type=int, default=128)
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--wd", type=float, default=0.0)
