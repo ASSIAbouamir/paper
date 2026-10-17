@@ -20,7 +20,7 @@ import torch
 import torch.nn.functional as F
 
 from .metrics import summarize
-from .models import SeqRec, count_params
+from .models import SeqRec, count_params, trim_left
 
 VARIANTS: Dict[str, dict] = {
     # single-stream
@@ -42,6 +42,7 @@ POSTHOC = {"poe"}  # late fusion of separately trained sasrec + text experts
 DATASET_DEFAULTS = {
     # max_len, dropout
     "ml1m": dict(max_len=200, dropout=0.2),
+    "ml100k": dict(max_len=200, dropout=0.2),
     "default": dict(max_len=50, dropout=0.5),
 }
 
@@ -83,33 +84,34 @@ def ranks_of(scores: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
 
 @torch.no_grad()
 def score_batches(model: SeqRec, seqs: torch.Tensor, dev, bs: int = 256):
-    """Yields (batch_seq, final-position scores (B, N+1))."""
+    """Yields (row indices, batch_seq, final-position scores (B, N+1)) in length-sorted order."""
     model.eval()
     tables = model.item_tables()
+    order = torch.argsort(seqs.ne(0).sum(1), stable=True)  # length-sorted so trimming is effective
     for i in range(0, len(seqs), bs):
-        b = seqs[i:i + bs].to(dev)
-        h = model.encode(b, tables)
-        yield b, model.logits({k: v[:, -1] for k, v in h.items()}, tables)
+        idx = order[i:i + bs]
+        b = seqs[idx].to(dev)
+        bt, = trim_left(b)
+        h = model.encode(bt, tables)
+        yield idx, b, model.logits({k: v[:, -1] for k, v in h.items()}, tables)
 
 
 @torch.no_grad()
 def evaluate(model, split, dev, masked: bool = False) -> np.ndarray:
     seqs, tgt = split
-    out = []
-    j = 0
-    for b, sc in score_batches(model, seqs, dev):
+    out = torch.zeros(len(seqs), dtype=torch.long)
+    for idx, b, sc in score_batches(model, seqs, dev):
         if masked:
             sc = sc.scatter(1, b, float("-inf"))
-        t = tgt[j:j + len(b)].to(dev)
-        j += len(b)
-        out.append(ranks_of(sc, t).cpu())
-    return torch.cat(out).numpy().astype(np.int32)
+        out[idx] = ranks_of(sc, tgt[idx].to(dev)).cpu()
+    return out.numpy().astype(np.int32)
 
 
 # ---------------------------------------------------------------------------
 def train_model(model: SeqRec, train, val, dev, cfg) -> Tuple[dict, int, float]:
     opt = torch.optim.AdamW(model.parameters(), lr=cfg["lr"], weight_decay=cfg["wd"], betas=(0.9, 0.98))
     inp, tgt = train
+    lens = inp.ne(0).sum(1)
     g = torch.Generator().manual_seed(cfg["seed"])
     best, best_state, best_ep, bad = -1.0, None, 0, 0
     t0 = time.time()
@@ -117,11 +119,20 @@ def train_model(model: SeqRec, train, val, dev, cfg) -> Tuple[dict, int, float]:
     positions = cfg.get("positions", "all")
     for ep in range(1, cfg["epochs"] + 1):
         model.train()
+        # length-bucketed batches: shuffle, sort within chunks of 50 batches by length, shuffle batch order
         perm = torch.randperm(len(inp), generator=g)
+        chunk = 50 * cfg["batch"]
+        batches = []
+        for c in range(0, len(perm), chunk):
+            part = perm[c:c + chunk]
+            part = part[torch.argsort(lens[part], stable=True)]
+            batches += [part[i:i + cfg["batch"]] for i in range(0, len(part), cfg["batch"])]
+        order = torch.randperm(len(batches), generator=g)
         tot, nb = 0.0, 0
-        for i in range(0, len(perm), cfg["batch"]):
-            idx = perm[i:i + cfg["batch"]]
-            x, y = inp[idx].to(dev), tgt[idx].to(dev)
+        for bi in order.tolist():
+            idx = batches[bi]
+            x, y = trim_left(inp[idx], tgt[idx])
+            x, y = x.to(dev), y.to(dev)
             if positions == "last":
                 sel = torch.zeros_like(y, dtype=torch.bool)
                 sel[:, -1] = True
@@ -205,21 +216,20 @@ def run_poe(ds, emb, cfg, run_root, dev):
     @torch.no_grad()
     def fused_ranks(split, alpha_list, masked=False):
         seqs, tgt = split
-        outs = [[] for _ in alpha_list]
+        outs = [torch.zeros(len(seqs), dtype=torch.long) for _ in alpha_list]
         gen_c = score_batches(experts["sasrec"], seqs, dev)
         gen_s = score_batches(experts["text"], seqs, dev)
-        j = 0
-        for (b, sc), (_, ss) in zip(gen_c, gen_s):
+        for (idx, b, sc), (idx2, _, ss) in zip(gen_c, gen_s):
+            assert torch.equal(idx, idx2)
             lc, ls = F.log_softmax(sc, 1), F.log_softmax(ss, 1)
-            t = tgt[j:j + len(b)].to(dev)
-            j += len(b)
+            t = tgt[idx].to(dev)
             for k, a in enumerate(alpha_list):
                 f = a * lc + (1 - a) * ls
                 f[:, 0] = float("-inf")
                 if masked:
                     f = f.scatter(1, b, float("-inf"))
-                outs[k].append(ranks_of(f, t).cpu())
-        return [torch.cat(o).numpy().astype(np.int32) for o in outs]
+                outs[k][idx] = ranks_of(f, t).cpu()
+        return [o.numpy().astype(np.int32) for o in outs]
 
     val_r = fused_ranks(val, alphas.tolist())
     nd = [summarize(r)["NDCG@10"] for r in val_r]

@@ -20,6 +20,8 @@ Usage:
                                  --meta data/raw/meta_Beauty.json.gz --out data/beauty
     python -m bixrec.data csv    --raw interactions.csv --meta item_text.csv --out data/x
     python -m bixrec.data txt    --raw ml-1m.txt --out data/ml1m_txt   (no text, sanity checks only)
+    python -m bixrec.data recbole --raw ml-100k.inter --meta ml-100k.item --out data/ml100k
+    python -m bixrec.data s3rec  --raw Beauty.txt --meta Beauty_item2attributes.json --out data/beauty_attr
 """
 
 import argparse
@@ -199,9 +201,52 @@ def read_txt(path: str):
     return rows, {}
 
 
+def read_recbole(inter_path: str, item_path: str):
+    """RecBole atomic files (e.g. ml-100k.inter / ml-100k.item from the RecBole repository)."""
+    rows = []
+    with open(inter_path, encoding="utf-8", errors="replace") as f:
+        header = f.readline().rstrip("\n").split("\t")
+        cols = {h.split(":")[0]: i for i, h in enumerate(header)}
+        for line in f:
+            p = line.rstrip("\n").split("\t")
+            rows.append((p[cols["user_id"]], p[cols["item_id"]], float(p[cols["timestamp"]])))
+    text = {}
+    if item_path:
+        with open(item_path, encoding="utf-8", errors="replace") as f:
+            header = f.readline().rstrip("\n").split("\t")
+            cols = {h.split(":")[0]: i for i, h in enumerate(header)}
+            for line in f:
+                p = line.rstrip("\n").split("\t")
+                get = lambda k: p[cols[k]].strip() if k in cols and cols[k] < len(p) else ""
+                parts = [f"Title: {get('movie_title')}."]
+                if get("release_year"):
+                    parts.append(f"Year: {get('release_year')}.")
+                if get("class"):
+                    parts.append(f"Genres: {', '.join(get('class').split())}.")
+                text[get("item_id")] = " ".join(parts)
+    return rows, text
+
+
+def read_s3rec(txt_path: str, attr_path: str):
+    """S3-Rec benchmark format: 'user i1 i2 ...' per line (chronological) and item2attributes.json.
+    Attribute ids (anonymised brand/category ids) become the item's side-information 'text' as tokens."""
+    rows = []
+    with open(txt_path) as f:
+        for line in f:
+            p = line.split()
+            for t, it in enumerate(p[1:]):
+                rows.append((p[0], it, float(t)))
+    text = {}
+    if attr_path:
+        with open(attr_path) as f:
+            for it, attrs in json.load(f).items():
+                text[it] = " ".join(f"attr{a}" for a in attrs)
+    return rows, text
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("kind", choices=["ml1m", "amazon", "csv", "txt"])
+    ap.add_argument("kind", choices=["ml1m", "amazon", "csv", "txt", "recbole", "s3rec"])
     ap.add_argument("--raw", required=True)
     ap.add_argument("--meta", default="")
     ap.add_argument("--out", required=True)
@@ -213,6 +258,10 @@ def main():
         rows, text = read_amazon(a.raw, a.meta)
     elif a.kind == "csv":
         rows, text = read_csv(a.raw, a.meta)
+    elif a.kind == "recbole":
+        rows, text = read_recbole(a.raw, a.meta)
+    elif a.kind == "s3rec":
+        rows, text = read_s3rec(a.raw, a.meta)
     else:
         rows, text = read_txt(a.raw)
     ds = build(rows, text, a.k, os.path.basename(os.path.normpath(a.out)))

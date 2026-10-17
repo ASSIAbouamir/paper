@@ -115,7 +115,7 @@ class SeqRec(nn.Module):
                  cross: bool = False, gate: bool = False, penalty: bool = False, lambda_max: float = 0.35):
         super().__init__()
         assert kind in {"id", "text", "hybrid", "dual"}
-        self.kind, self.num_items, self.d, self.heads = kind, num_items, d, heads
+        self.kind, self.num_items, self.d, self.heads, self.max_len = kind, num_items, d, heads, max_len
         self.cross, self.gate, self.penalty, self.lambda_max = cross, gate, penalty, lambda_max
         needs_id = kind in {"id", "hybrid", "dual"}
         needs_text = kind in {"text", "hybrid", "dual"}
@@ -152,7 +152,9 @@ class SeqRec(nn.Module):
 
     def _embed(self, seq, table, pos_table):
         T = seq.shape[1]
-        pos = torch.arange(T, device=seq.device).unsqueeze(0)
+        # right-aligned positions: the most recent item always has index max_len - 1, so trimming
+        # leading padding columns (see trim_left) leaves the computation unchanged
+        pos = torch.arange(self.max_len - T, self.max_len, device=seq.device).unsqueeze(0)
         x = table[seq] * math.sqrt(self.d) + pos_table(pos)
         return self.emb_drop(x) * seq.ne(0).unsqueeze(-1)
 
@@ -200,6 +202,15 @@ class SeqRec(nn.Module):
     def pair_scores(self, h, tables, items: torch.Tensor) -> torch.Tensor:
         """Scores of specific items (M,) for single-stream models (BCE ablation)."""
         return (h["x"] * tables["x"][items]).sum(-1)
+
+
+def trim_left(*xs: torch.Tensor):
+    """Drop leading columns that are padding (0) in every row of the first tensor."""
+    nz = xs[0].ne(0).any(0)
+    if not nz.any():
+        return xs
+    first = int(nz.nonzero()[0])
+    return tuple(x[:, first:] for x in xs)
 
 
 def count_params(model: nn.Module) -> int:
