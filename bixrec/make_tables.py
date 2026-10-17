@@ -16,7 +16,8 @@ import torch
 
 from .stats import holm, mcnemar_exact, ndcg_per_user, paired_seed_test, seed_summary, wilcoxon
 
-DATASETS = [("ml1m", "ML-1M"), ("beauty", "Beauty"), ("sports", "Sports")]
+ALL_DATASETS = [("ml100k", "ML-100K"), ("ml1m", "ML-1M"), ("beauty", "Beauty"), ("sports", "Sports")]
+DATASETS = [d for d in ALL_DATASETS if d[0] != "ml100k"]  # replaced in main() by the datasets found
 NAMES = {
     "sasrec": "SASRec (ID)",
     "sasrec_bce": "SASRec, BCE + 1 negative",
@@ -267,7 +268,7 @@ def table_datasets(data_root):
 
 def macros(runs, sig):
     """Headline numbers as LaTeX macros, e.g. \\resMlOneBixNdcg."""
-    tag = {"ml1m": "MlOne", "beauty": "Beauty", "sports": "Sports"}
+    tag = {"ml100k": "MlHundred", "ml1m": "MlOne", "beauty": "Beauty", "sports": "Sports"}
     vtag = {"sasrec": "Sasrec", "poe": "Poe", "poe50": "PoeFifty", "hybrid": "Hybrid", "dual_late": "Late",
             "bix": "Bix", "text": "Text"}
     out = []
@@ -291,6 +292,10 @@ def main():
     ap.add_argument("--out", default="paper/generated")
     a = ap.parse_args()
     runs = load_runs(a.runs)
+    global DATASETS
+    found = [d for d in ALL_DATASETS if d[0] in runs]
+    if found:
+        DATASETS = found
     os.makedirs(a.out, exist_ok=True)
     sig_tex, sig = table_significance(runs)
     len_tex, length = table_length(runs, a.data_root)

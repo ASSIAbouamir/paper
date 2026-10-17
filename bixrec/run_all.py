@@ -19,7 +19,7 @@ SEEDS = [42, 123, 2024, 7, 99]
 STAGES = {
     "core": (["sasrec", "text", "hybrid", "dual_late", "bix", "poe"], SEEDS, None),
     "ablation": (["dual_late_pen", "bix_nogate", "bix_gate"], SEEDS, None),
-    "audit": (["sasrec_lastpos", "sasrec_bce", "bix_lastpos"], SEEDS[:3], ["ml1m"]),
+    "audit": (["sasrec_lastpos", "sasrec_bce", "bix_lastpos"], SEEDS[:3], ["ml1m", "ml100k"]),
 }
 
 
