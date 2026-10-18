@@ -41,7 +41,8 @@ where item content is a title, a year and genres, BiXRec improves NDCG@10 over S
 over early fusion by \gainMlHundredHybrid\% (Holm-corrected $p<0.05$), while its \gainMlHundredPoe\% over a tuned
 product of experts is not significant with 943 test users. On Amazon Beauty, where content is a handful of
 category and brand attributes, BiXRec beats SASRec (\gainBeautySasrec\%) and the joint late-fusion control
-(\gainBeautyLate\%), but simple early fusion is better still (BiXRec \gainBeautyHybrid\%). Cross-attention therefore
+(\gainBeautyLate\%), and an ablation attributes the gain over late fusion to cross-attention, but simple early
+fusion is better still (BiXRec \gainBeautyHybrid\%). Cross-attention therefore
 pays off when item content is informative and is not a substitute for early fusion when it is not. A
 training-protocol audit shows that training on the last position only cuts SASRec's NDCG@10 by about 75\%, a
 larger effect than any fusion design we compare.
@@ -292,8 +293,15 @@ The ablation in Table~\ref{tab:ablation} adds, in order, joint training (static 
 the disagreement penalty, cross-attention and the gate. On MovieLens-100K no single component produces a clear step:
 each partial model lies within one standard deviation of joint late fusion, and only the full combination is
 higher than all of them; the learned penalty weight is small but consistent ($\lambda\approx0.07$--$0.08$ on every
-seed). The ablation therefore does not let us attribute the gain on MovieLens-100K to one component.
-\todo{Beauty ablation runs are in progress; describe them once all seeds have finished.}
+seed). On Beauty the attribution is clear. We compare consecutive rows with the same per-user Wilcoxon test as
+above, Holm-corrected over the ten step comparisons on both datasets. Adding cross-attention to joint late fusion is
+the one step that matters on its own: $+0.11$ NDCG points ($p_\mathrm{Holm}=0.002$), on every seed. The penalty
+alone ($+0.03$) and the gate alone ($-0.03$) change nothing measurable, and adding the penalty on top of gated
+cross-attention gives a further $+0.06$ ($p_\mathrm{Holm}=0.04$). Overall, BiXRec is $0.14$ points above joint late
+fusion on Beauty ($p_\mathrm{Holm}<0.001$). On MovieLens-100K no step survives the correction; the largest
+is again the penalty on top of gated cross-attention ($+0.38$ points, $p_\mathrm{Holm}=0.08$). Cross-attention,
+not joint training, is therefore what lifts BiXRec above late fusion when the effect is measurable, and the penalty
+helps only in combination with it.
 
 \subsection{Relation to the selection bound}
 The last column of Table~\ref{tab:overlap} gives the hits BiXRec adds over SASRec. On MovieLens-100K BiXRec adds 16
@@ -333,8 +341,9 @@ baselines must be trained with the same objective.
 when the content expert is weak, a base rate far below break-even. Fusion inside the representations helps when
 item content is informative (MovieLens-100K) and BiXRec is consistently better than SASRec and than an equally
 trained late-fusion control on Beauty; it is not better than early fusion when content is a few attribute tags.
-None of the components of BiXRec is responsible for the gain on its own, and part of the MovieLens-100K gain
-disappears when watched items are masked.
+On Beauty, where the test has power, the gain over late fusion comes from cross-attention, and the
+disagreement penalty helps only on top of it; on MovieLens-100K no single component is significant, and part of the
+gain disappears when watched items are masked.
 
 \textbf{Limitations.} (i)~Compute: all runs used a 2-core CPU, which limited us to three seeds, at most 100 epochs
 and compact models with one shared hyper-parameter setting; tuning each model separately could change close
@@ -351,7 +360,8 @@ compared.
 \section{Conclusion}
 Choosing, per user, between an ID expert and a content expert has little room to help, and the room shrinks as the
 content expert weakens. Letting the two experts exchange information inside a dual-stream transformer is more
-promising: BiXRec improves on SASRec and on an equally trained late-fusion control, and wins on MovieLens-100K, but
+promising: BiXRec improves on SASRec and on an equally trained late-fusion control, the improvement over late
+fusion comes from cross-attention, and BiXRec wins on MovieLens-100K, but
 it is beaten by simple early fusion when item content is sparse. The largest effect we measured is not a fusion
 design at all but the training objective, which must be held fixed for fusion comparisons to mean anything.
 

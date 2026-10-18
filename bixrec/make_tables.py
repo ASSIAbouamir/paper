@@ -310,8 +310,9 @@ def main():
     ap.add_argument("--runs", default="runs")
     ap.add_argument("--data_root", default="data")
     ap.add_argument("--out", default="paper/generated")
+    ap.add_argument("--exclude", nargs="*", default=[], help="datasets to leave out (e.g. still running)")
     a = ap.parse_args()
-    runs = load_runs(a.runs)
+    runs = {k: v for k, v in load_runs(a.runs).items() if k not in a.exclude}
     global DATASETS
     found = [d for d in ALL_DATASETS if d[0] in runs]
     if found:
