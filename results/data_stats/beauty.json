@@ -1,0 +1,13 @@
+{
+ "name": "beauty",
+ "users": 22363,
+ "items": 12101,
+ "interactions": 198502,
+ "density": 0.0007335227064174272,
+ "seq_len_mean": 8.876358270357287,
+ "seq_len_median": 6.0,
+ "seq_len_min": 5,
+ "seq_len_max": 204,
+ "items_without_text": 0,
+ "k_core": 5
+}

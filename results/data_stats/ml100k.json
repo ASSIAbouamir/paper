@@ -1,0 +1,13 @@
+{
+ "name": "ml100k",
+ "users": 943,
+ "items": 1349,
+ "interactions": 99287,
+ "density": 0.07804925214624242,
+ "seq_len_mean": 105.28844114528101,
+ "seq_len_median": 64.0,
+ "seq_len_min": 19,
+ "seq_len_max": 648,
+ "items_without_text": 0,
+ "k_core": 5
+}

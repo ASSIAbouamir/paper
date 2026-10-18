@@ -1,0 +1,13 @@
+{
+ "name": "sports",
+ "users": 35598,
+ "items": 18357,
+ "interactions": 296337,
+ "density": 0.00045348045456958995,
+ "seq_len_mean": 8.324540704533963,
+ "seq_len_median": 6.0,
+ "seq_len_min": 5,
+ "seq_len_max": 296,
+ "items_without_text": 0,
+ "k_core": 5
+}

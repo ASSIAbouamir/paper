@@ -11,7 +11,7 @@
 \usepackage[hidelinks]{hyperref}
 
 \newtheorem{proposition}{Proposition}
-% Red notes mark text that must be (re)written once the experiments in run_experiments_colab.ipynb have finished.
+% Red notes mark results that are still being computed (Beauty ablation, Amazon Sports).
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
 % All numbers below come from paper/generated/tables.tex, produced by `python -m bixrec.make_tables`.
@@ -28,22 +28,23 @@ Score Routing versus Bilateral Cross-Attention in Sequential Recommendation}
 
 \begin{abstract}
 Sequential recommenders increasingly combine a collaborative expert over item IDs with a semantic expert over item
-text. The usual recipe keeps the two experts separate and merges their scores, either with a static rule or with a
-learned per-user router. We first show, with a model-free argument, why per-user selection between two experts has
-little to gain: the improvement over the collaborative expert is bounded by the users that only the semantic expert
-hits, and a selector must be right more than half of the time on the users it moves, far above the base rate we
-measure. We then ask whether the experts should instead meet inside their representations. BiXRec is a dual-stream
-transformer in which an ID stream and a text stream exchange information at every layer through gated bilateral
-cross-attention, and are scored jointly with a candidate-level disagreement penalty. Our evaluation isolates what
-each design choice contributes: every model shares one implementation, loss (full-softmax cross-entropy at all
-positions), training budget and early-stopping rule; a jointly trained late-fusion control separates the effect of
-cross-attention from that of joint training; and results are reported over five seeds on MovieLens-1M, Amazon Beauty
-and Amazon Sports with full-catalog ranking and Holm-corrected paired tests. Relative to a tuned static product of
-experts, BiXRec changes NDCG@10 by \gainMlOnePoe\%, \gainBeautyPoe\% and \gainSportsPoe\% on the three datasets,
-and by \gainMlOneHybrid\%, \gainBeautyHybrid\% and \gainSportsHybrid\% relative to early fusion of ID and text
-embeddings. \todo{One sentence stating the main finding once results are in, e.g.\ which component carries the gain.}
-We also report a training-protocol audit showing how much accuracy is lost when sequential models are trained on
-the last position only or with one sampled negative.
+content. The usual recipe keeps the two experts separate and merges their scores, either with a static rule or with
+a learned per-user router. We first give a model-free argument that bounds what any per-user selection between two
+experts can gain: at most the users that only the semantic expert hits, and only if the selector is right on more
+than half of the users it moves. On Amazon Beauty the measured base rate is 14\%, so routing has little to gain. We
+then ask whether the experts should instead meet inside their representations. BiXRec is a dual-stream transformer
+in which an ID stream and a content stream exchange information at every layer through gated bilateral
+cross-attention and are scored jointly with a candidate-level disagreement penalty. Every model in our study shares
+one implementation, loss (full-softmax cross-entropy at all positions), budget and stopping rule, and a jointly
+trained late-fusion control separates the effect of cross-attention from that of joint training. On MovieLens-100K,
+where item content is a title, a year and genres, BiXRec improves NDCG@10 over SASRec by \gainMlHundredSasrec\% and
+over early fusion by \gainMlHundredHybrid\% (Holm-corrected $p<0.05$), while its \gainMlHundredPoe\% over a tuned
+product of experts is not significant with 943 test users. On Amazon Beauty, where content is a handful of
+category and brand attributes, BiXRec beats SASRec (\gainBeautySasrec\%) and the joint late-fusion control
+(\gainBeautyLate\%), but simple early fusion is better still (BiXRec \gainBeautyHybrid\%). Cross-attention therefore
+pays off when item content is informative and is not a substitute for early fusion when it is not. A
+training-protocol audit shows that training on the last position only cuts SASRec's NDCG@10 by about 75\%, a
+larger effect than any fusion design we compare.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -55,8 +56,8 @@ sequential recommendation, multimodal fusion, cross-attention, product of expert
 
 Collaborative sequential recommenders such as GRU4Rec, SASRec and BERT4Rec~\cite{hidasi2016gru4rec,kang2018sasrec,%
 sun2019bert4rec} learn item transitions from interaction IDs and are strong when histories and item counts are
-dense. Text encoders such as Sentence-BERT~\cite{reimers2019sbert} describe items independently of interactions
-and help where IDs are sparse. A common way to combine the two is late fusion: train a collaborative expert~$C$ and a
+dense. Content encoders, from TF-IDF to Sentence-BERT~\cite{reimers2019sbert}, describe items from their text or
+attributes, independently of interactions, and help where IDs are sparse. A common way to combine the two is late fusion: train a collaborative expert~$C$ and a
 semantic expert~$S$ separately, then merge their scores, either statically (a weighted sum or a product of
 experts~\cite{hinton2002poe}) or with a learned router that picks, per user, the expert that should be
 trusted~\cite{shazeer2017moe,ma2018mmoe}.
@@ -68,7 +69,7 @@ are few, and they are mixed with a larger group that only $C$ gets right. Sectio
 simple bound on what any per-user selector can gain and a break-even precision it must reach.
 
 If choosing between finished scores cannot help much, the experts must exchange information earlier. We study a
-direct design, BiXRec: two transformer streams, one over ID embeddings and one over projected text embeddings, that
+direct design, BiXRec: two transformer streams, one over ID embeddings and one over projected content embeddings, that
 query each other at every layer through gated bilateral cross-attention, in the spirit of co-attention in
 vision--language models~\cite{lu2019vilbert}, and are scored jointly with a penalty on candidates on which the two
 streams disagree.
@@ -86,11 +87,13 @@ cross-attention.
 explains why per-user routing over frozen ID and text experts has little headroom (Sec.~\ref{sec:bound}).
 (ii)~BiXRec, a dual-stream sequential recommender with gated bilateral cross-attention and a candidate-level
 disagreement penalty (Sec.~\ref{sec:model}).
-(iii)~A controlled evaluation on three datasets and five seeds, with one implementation and one training protocol
-for all models, a joint-training control, full-catalog ranking, history-masking and history-length analyses, and
-Holm-corrected paired tests (Sec.~\ref{sec:setup}--\ref{sec:results}).
+(iii)~A controlled evaluation with one implementation and one training protocol for all models, a joint-training
+control, full-catalog ranking, history-masking and history-length analyses, and Holm-corrected paired tests
+(Sec.~\ref{sec:setup}--\ref{sec:results}). It shows that the benefit of cross-attention depends on how informative
+item content is: it wins with titles and genres, and loses to early fusion with sparse attribute tags.
 (iv)~A training-protocol audit that quantifies the accuracy lost to two common shortcuts, as a reproducibility
-lesson for fusion studies (Sec.~\ref{sec:audit}). Code, configurations and per-user ranks are released.
+lesson for fusion studies (Sec.~\ref{sec:audit}). Code, configurations, per-run metrics and per-user ranks are
+released.
 
 % ---------------------------------------------------------------------------
 \section{Related Work}
@@ -146,9 +149,12 @@ one hit, a moved user in $\mathcal{U}_{10}$ loses one. The maximum is reached fo
 
 The bound covers routing between finished rankings. It does not cover rules that build a new score per candidate,
 such as a product of experts or BiXRec, which can hit users that neither expert hits. Table~\ref{tab:overlap}
-reports the overlap of our separately trained experts: \todo{one sentence with the measured base rate versus the
-50\% break-even point, per dataset}. This is why we do not pursue per-user routing and turn to fusion inside the
-representations.
+reports the overlap of our separately trained experts. On Beauty only 234 users are hit by the content expert
+alone, against 1,486 hit by SASRec alone: a selector that has no information about the outcome is right on 14\% of
+the users it moves, far below the 50\% it needs to break even, and even a perfect selector could add at most 1\%
+of users. On MovieLens-100K the two groups are of similar size (48 and 50 users), so the base rate is close to
+break-even and the bound is less restrictive, but the ceiling is again small (5\% of users). This is why we do not
+pursue per-user routing and turn to fusion inside the representations.
 
 \tabOverlap
 
@@ -185,7 +191,7 @@ representations.
 
 \textbf{Two streams.} For a prefix $(v_1,\dots,v_t)$ the collaborative stream embeds items with a learned table
 $E^c\in\mathbb{R}^{|\mathcal{I}|\times d}$ and the semantic stream with $E^s_i = g(\phi(x_i))$, where $\phi$ is a
-frozen sentence encoder applied to the item text $x_i$ and $g$ a two-layer MLP. Each stream adds its own positional
+frozen content encoder applied to the item text or attributes $x_i$ and $g$ a two-layer MLP. Each stream adds its own positional
 embeddings: $c^{(0)}_t=\sqrt{d}\,E^c_{v_t}+P^c_t$ and $s^{(0)}_t=\sqrt{d}\,E^s_{v_t}+P^s_t$.
 
 \textbf{Gated bilateral cross-attention.} Each of the $L$ layers applies pre-norm causal self-attention to each
@@ -217,10 +223,13 @@ SASRec-style encoders is two cross-attention modules and two gates per layer.
 % ---------------------------------------------------------------------------
 \section{Experimental Setup}\label{sec:setup}
 
-\textbf{Datasets.} MovieLens-1M~\cite{harper2015movielens} (text: title and genres) and the Amazon 2014
-Beauty and Sports 5-core review sets~\cite{mcauley2015image} (text: title, brand and categories). We apply an
-iterative 5-core filter, order interactions by time (ties by file order) and keep the first occurrence of every
-user--item pair, so the test target never appears in the input history (Table~\ref{tab:data}).
+\textbf{Datasets.} MovieLens-100K~\cite{harper2015movielens}, in the release distributed with
+RecBole~\cite{zhao2021recbole}, whose item content is the title, release year and genres; and Amazon
+Beauty~\cite{mcauley2015image} in the 5-core release of S3-Rec~\cite{zhou2020s3rec}, whose item content is a set of
+anonymised category and brand attribute identifiers (on average 3--4 per item). The two datasets therefore span rich
+and poor item content. We apply an iterative 5-core filter, order interactions by time (ties by file order) and
+keep the first occurrence of every user--item pair, so the test target never appears in the input history
+(Table~\ref{tab:data}). \todo{Amazon Sports (S3-Rec release) is being run with the same protocol and will be added.}
 
 \tabData
 
@@ -229,24 +238,30 @@ target, and all earlier items form the training sequence. No user group is treat
 against all items without negative sampling and report HR@10 and NDCG@10; ties count against the target. The main
 tables do not remove history items from the ranking; Table~\ref{tab:mask} reports both.
 
-\textbf{Models.} All models use the same transformer block (pre-norm, causal and key-padding masks), $d=64$, two
-layers, two heads, maximum length 200 (ML-1M) or 50 (Amazon), and dropout 0.2 (ML-1M) or 0.5 (Amazon).
-\emph{SASRec}: ID stream only. \emph{Text expert}: text stream only, no IDs. \emph{Static PoE}: separately trained
-SASRec and text expert fused as $\alpha\log p^C+(1-\alpha)\log p^S$, with $\alpha=0.5$ or $\alpha$ tuned on the
-validation targets. \emph{Early fusion}: one stream whose item embedding is $E^c_i+E^s_i$. \emph{Joint late fusion}:
-BiXRec without cross-attention, i.e.\ two streams that never interact before Eq.~\eqref{eq:score} but are trained
-end to end through it. Ablations add the penalty, cross-attention and the gate one at a time.
-The text encoder $\phi$ is the frozen all-MiniLM-L6-v2 for every model.
+\textbf{Content encoder.} $\phi$ is TF-IDF over the item's text or attribute tokens followed by a truncated SVD to
+128 dimensions (latent semantic analysis), fitted on item content only and frozen for every model. It uses no
+interaction data and no pre-training corpus, so it cannot leak information about the test interactions; a
+pre-trained sentence encoder is a drop-in replacement in our code.
 
-\textbf{Training.} AdamW~\cite{loshchilov2019adamw} with learning rate $10^{-3}$, batch size 128, gradient clipping at
-5, full-softmax cross-entropy at all positions for every model, at most 200 epochs, and early stopping with
-patience 20 on validation NDCG@10; the test targets are used once, after model selection. Seeds
-$\{42,123,2024,7,99\}$ change initialisation and batch order; each seed retrains every model.
+\textbf{Models.} All models use the same transformer block (pre-norm, causal and key-padding masks), $d=64$, two
+layers, two heads, maximum length 200 and dropout 0.2 on MovieLens-100K, and maximum length 50 and dropout 0.5 on
+Beauty. \emph{SASRec}~\cite{kang2018sasrec}: ID stream only. \emph{Content expert}: content stream only, no IDs.
+\emph{Static PoE}: separately trained SASRec and content expert fused as $\alpha\log p^C+(1-\alpha)\log p^S$, with
+$\alpha=0.5$ or $\alpha\in\{0,0.05,\dots,1\}$ tuned on validation NDCG@10. \emph{Early fusion}: one stream whose item
+embedding is $E^c_i+E^s_i$. \emph{Joint late fusion}: BiXRec without cross-attention, i.e.\ two streams that never
+interact before Eq.~\eqref{eq:score} but are trained end to end through it. Ablations add the penalty,
+cross-attention and the gate one at a time.
+
+\textbf{Training.} AdamW~\cite{loshchilov2019adamw} (learning rate $10^{-3}$, $\beta_2=0.98$, no weight decay), batch
+size 128, gradient clipping at 5, full-softmax cross-entropy at all positions for every model, at most 100 epochs,
+and early stopping on validation NDCG@10 with patience 10, never before epoch 30; the test targets are used once,
+after model selection. Seeds $\{42,123,2024\}$ change initialisation and batch order, and each seed retrains every
+model. All runs were made on a 2-core CPU, which is what limits the number of epochs and seeds.
 
 \textbf{Statistics.} Seeds share users, so we treat users as the unit of inference: for each model we average the
 per-user NDCG@10 over seeds and compare BiXRec with each baseline by a two-sided Wilcoxon signed-rank test, with
 Holm correction~\cite{holm1979} over all baseline--dataset pairs. We also report the number of seeds won and the
-largest per-seed exact McNemar $p$ on HR@10~\cite{mcnemar1947}.
+largest per-seed exact McNemar $p$ on HR@10~\cite{mcnemar1947}, a deliberately conservative check.
 
 % ---------------------------------------------------------------------------
 \section{Results}\label{sec:results}
@@ -255,55 +270,90 @@ largest per-seed exact McNemar $p$ on HR@10~\cite{mcnemar1947}.
 \tabSig
 
 \subsection{Overall accuracy}
-Table~\ref{tab:main} reports accuracy and Table~\ref{tab:sig} the paired tests. On ML-1M BiXRec reaches
-\resMlOneBixNdcg\% NDCG@10 against \resMlOnePoeNdcg\% for tuned static PoE and \resMlOneHybridNdcg\% for early
-fusion; on Beauty \resBeautyBixNdcg\% against \resBeautyPoeNdcg\% and \resBeautyHybridNdcg\%; on Sports
-\resSportsBixNdcg\% against \resSportsPoeNdcg\% and \resSportsHybridNdcg\%.
-\todo{Describe which differences survive Holm correction and on how many seeds; do not claim an improvement that is
-not significant.}
+Table~\ref{tab:main} reports accuracy and Table~\ref{tab:sig} the paired tests. On MovieLens-100K BiXRec has the
+highest HR@10 and NDCG@10 (\resMlHundredBixNdcg\% NDCG@10, against \resMlHundredSasrecNdcg\% for SASRec,
+\resMlHundredPoeNdcg\% for tuned PoE and \resMlHundredHybridNdcg\% for early fusion). Its gains over SASRec
+(\gainMlHundredSasrec\%) and over early fusion (\gainMlHundredHybrid\%) are significant after Holm correction; its
+gains over tuned PoE (\gainMlHundredPoe\%) and over joint late fusion (\gainMlHundredLate\%) are not, and the
+seed-to-seed standard deviation (0.6 NDCG points) is of the same size as these gaps. With 943 test users,
+MovieLens-100K can only detect large effects.
+
+On Beauty the picture changes. BiXRec improves on SASRec (\gainBeautySasrec\%), on static PoE with
+$\alpha=0.5$ and on joint late fusion (\gainBeautyLate\%), all significant and on every seed, and matches tuned PoE.
+Early fusion, however, is the best model on Beauty: BiXRec is \gainBeautyHybrid\% below it, on all three seeds.
+The content expert alone is weak on Beauty (HR@10 below 2\%), and both late-fusion variants learn to put most of
+the weight on the ID stream ($w\approx0.9$ for joint late fusion, $w\approx0.83$ for BiXRec, against $w\approx0.54$
+on MovieLens-100K). When item content is a few attribute tags, adding it to the ID embedding is more useful than
+running a second stream over it.
 
 \subsection{Where does the gain come from?}
 \tabAbl
-The ablation in Table~\ref{tab:ablation} separates three effects: joint training (static PoE $\rightarrow$ joint late
-fusion), the disagreement penalty, and cross-attention with and without the gate.
-\todo{State which step carries the gain. If joint late fusion already closes most of the gap, the contribution is
-joint training, not cross-attention; report that honestly.}
+The ablation in Table~\ref{tab:ablation} adds, in order, joint training (static PoE $\rightarrow$ joint late fusion),
+the disagreement penalty, cross-attention and the gate. On MovieLens-100K no single component produces a clear step:
+each partial model lies within one standard deviation of joint late fusion, and only the full combination is
+higher than all of them; the learned penalty weight is small but consistent ($\lambda\approx0.07$--$0.08$ on every
+seed). The ablation therefore does not let us attribute the gain on MovieLens-100K to one component.
+\todo{Beauty ablation runs are in progress; describe them once all seeds have finished.}
 
 \subsection{Relation to the selection bound}
-Table~\ref{tab:overlap} gives, in its last column, the hits BiXRec adds over SASRec, next to $n_{01}$, the most any
-per-user selector between the two experts could add. \todo{Compare the two numbers per dataset.}
+The last column of Table~\ref{tab:overlap} gives the hits BiXRec adds over SASRec. On MovieLens-100K BiXRec adds 16
+hits, a third of the 48 that an oracle selector could add; on Beauty it adds 40 hits, which no selector working at the
+measured 14\% base rate could deliver, since such a selector loses hits. Candidate-level fusion is not limited by the
+bound, because it can rank targets that neither expert ranks in its top 10.
 
 \subsection{Who benefits?}
 \tabLength
-Table~\ref{tab:length} splits test users by history length. \todo{Describe whether the gain over SASRec and over
-PoE concentrates on short histories, as the gate motivation suggests, or not.}
+Table~\ref{tab:length} splits test users into terciles of history length. On MovieLens-100K BiXRec gains most on
+the shortest histories (6.76\% NDCG@10 against 5.85\% for SASRec) and also leads on medium histories; on the longest
+histories tuned PoE is slightly ahead. On Beauty early fusion is best in every tercile, and BiXRec is above SASRec in
+every tercile. The gate is meant to help short histories, and this is where BiXRec's advantage on MovieLens-100K is
+largest, but the ablation shows the gate alone does not explain it.
 
 \subsection{History masking}
 \tabMask
-\todo{Masking can only raise the rank of the target here; report whether it changes the order of models.}
+Removing history items from the ranking can only improve the rank of the target here, and it raises every model
+substantially (NDCG@10 rises by 69--84\% on MovieLens-100K and by 35--37\% on Beauty). On Beauty the order of
+the models is essentially unchanged (only SASRec and joint late fusion, which differ by 0.02 points, swap). On MovieLens-100K, whose users have long histories, masking reorders the fusion models: joint
+late fusion, tuned PoE and BiXRec end within 0.2 NDCG points of each other, so BiXRec's lead under the unmasked
+protocol partly comes from ranking already-watched movies lower. Fusion studies should report both protocols.
 
 \subsection{Training-protocol audit}\label{sec:audit}
 \tabAudit
-Table~\ref{tab:audit} trains SASRec and BiXRec with two shortcuts: a loss on the last position of each training
-sequence only, and binary cross-entropy with one uniformly sampled negative per position.
-\todo{Report the size of both drops. If a fusion model is trained with the full objective and its baselines with a
-shortcut, the difference can be mistaken for a fusion effect.}
+Table~\ref{tab:audit} trains SASRec and BiXRec on MovieLens-100K with two shortcuts. Training on the last position of
+each sequence only reduces SASRec's NDCG@10 from 4.03\% to 1.02\% ($-75\%$) and BiXRec's from 4.81\% to 1.83\%
+($-62\%$). Binary cross-entropy with one sampled negative reduces SASRec to 3.01\% ($-25\%$). These effects are an
+order of magnitude larger than any difference between fusion designs in Table~\ref{tab:main}: a BiXRec trained with
+the full objective would appear 372\% better than a SASRec trained on the last position only. Fusion models and their
+baselines must be trained with the same objective.
 
 % ---------------------------------------------------------------------------
 \section{Discussion and Limitations}\label{sec:limits}
 
-\todo{Rewrite after results. Points to cover:} (i)~The bound in Sec.~\ref{sec:bound} applies to per-user selection
-between two finished rankings; it says nothing about learned candidate-level rules. (ii)~Leave-one-out splits share
-a global timeline, so training sequences of some users may contain interactions that happen after other users'
-test targets~\cite{ji2023leakage}. (iii)~We use one small frozen text encoder and compact backbones with one shared
-hyper-parameter setting; tuning each model separately, larger encoders and text-pre-trained recommenders such as
-UniSRec or Recformer~\cite{hou2022unisrec,li2023recformer} are natural next comparisons. (iv)~Five seeds share the
-same test users; per-user tests account for user variability but not for every source of training variance.
-(v)~ML-1M movie titles may be known to the text encoder from pre-training.
+\textbf{What the evidence supports.} Per-user routing between frozen ID and content experts has a small ceiling and,
+when the content expert is weak, a base rate far below break-even. Fusion inside the representations helps when
+item content is informative (MovieLens-100K) and BiXRec is consistently better than SASRec and than an equally
+trained late-fusion control on Beauty; it is not better than early fusion when content is a few attribute tags.
+None of the components of BiXRec is responsible for the gain on its own, and part of the MovieLens-100K gain
+disappears when watched items are masked.
+
+\textbf{Limitations.} (i)~Compute: all runs used a 2-core CPU, which limited us to three seeds, at most 100 epochs
+and compact models with one shared hyper-parameter setting; tuning each model separately could change close
+comparisons. (ii)~Content: we use a frozen TF-IDF/LSA encoder; Beauty content is anonymised attribute identifiers,
+not product text, and MovieLens-100K is small. Pre-trained sentence encoders, product titles and larger datasets
+such as MovieLens-1M are the natural next step, and the released code supports them unchanged. (iii)~The bound in
+Sec.~\ref{sec:bound} applies to per-user selection between two finished rankings; it says nothing about learned
+candidate-level rules. (iv)~Leave-one-out splits share a global timeline, so training sequences of some users may
+contain interactions that happen after other users' test targets~\cite{ji2023leakage}. (v)~Seeds share the same
+test users; per-user tests account for user variability but not for every source of training variance.
+(vi)~Text-pre-trained recommenders such as UniSRec or Recformer~\cite{hou2022unisrec,li2023recformer} are not
+compared.
 
 \section{Conclusion}
-\todo{Two or three sentences, written after the results: what the bound shows, what BiXRec adds and which component
-is responsible, and the protocol lesson.}
+Choosing, per user, between an ID expert and a content expert has little room to help, and the room shrinks as the
+content expert weakens. Letting the two experts exchange information inside a dual-stream transformer is more
+promising: BiXRec improves on SASRec and on an equally trained late-fusion control, and wins on MovieLens-100K, but
+it is beaten by simple early fusion when item content is sparse. The largest effect we measured is not a fusion
+design at all but the training objective, which must be held fixed for fusion comparisons to mean anything.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}

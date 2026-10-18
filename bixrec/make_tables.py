@@ -22,7 +22,7 @@ NAMES = {
     "sasrec": "SASRec (ID)",
     "sasrec_bce": "SASRec, BCE + 1 negative",
     "sasrec_lastpos": "SASRec, last position only",
-    "text": "Text expert",
+    "text": "Content expert",
     "poe50": "Static PoE ($\\alpha{=}0.5$)",
     "poe": "Tuned PoE ($\\alpha$ on val.)",
     "hybrid": "Early fusion (ID + text)",
@@ -63,6 +63,8 @@ def fmt(s, scale=100, bold=False, digits=2):
     if s is None:
         return "--"
     txt = f"{s['mean'] * scale:.{digits}f}" + (f"\\,$\\pm$\\,{s['sd'] * scale:.{digits}f}" if s["n"] > 1 else "")
+    if s["n"] < 3:  # incomplete: mark the number of seeds
+        txt += f"$^{{n={s['n']}}}$"
     return f"\\textbf{{{txt}}}" if bold else txt
 
 
@@ -217,7 +219,7 @@ def table_overlap(runs):
     Any per-user selector between the two experts can gain at most n01 hits over SASRec and
     risks n10; it needs precision > 50% on the users it moves, against a base rate n01/(n01+n10)."""
     lines = [r"\begin{table}[t]", r"\centering",
-             r"\caption{Hit overlap at HR@10 of the separately trained ID expert (C) and text expert (S), "
+             r"\caption{Hit overlap at HR@10 of the separately trained ID expert (C) and content expert (S), "
              r"mean over seeds. $n_{11}$: both hit; $n_{10}$: only C; $n_{01}$: only S. A per-user selector "
              r"between C and S gains at most $n_{01}$ hits over C and puts $n_{10}$ at risk; "
              r"base rate $=n_{01}/(n_{01}+n_{10})$.}",
@@ -285,6 +287,24 @@ def macros(runs, sig):
     return "\n".join(out) + "\n"
 
 
+def fit_single_column(tex: str) -> str:
+    """Scale tabulars of single-column tables down to the column width when they are wider."""
+    out, inside = [], False
+    for line in tex.split("\n"):
+        if line.startswith(r"\begin{table}["):
+            inside = True
+        elif line.startswith(r"\begin{table*}"):
+            inside = False
+        if inside and line.startswith(r"\begin{tabular}"):
+            line = r"\resizebox{\ifdim\width>\columnwidth\columnwidth\else\width\fi}{!}{" + line
+        if inside and line.startswith(r"\end{tabular}"):
+            line = line + "}"
+        if line.startswith(r"\end{table}"):
+            inside = False
+        out.append(line)
+    return "\n".join(out)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs", default="runs")
@@ -316,6 +336,7 @@ def main():
     tex += "\\newcommand{\\tabLength}{\n" + len_tex + "}\n"
     tex += "\\newcommand{\\tabOverlap}{\n" + ov_tex + "}\n"
     tex += "\\newcommand{\\tabData}{\n" + table_datasets(a.data_root) + "}\n"
+    tex = fit_single_column(tex)
     with open(os.path.join(a.out, "tables.tex"), "w") as f:
         f.write(tex)
     summary = {"significance": sig, "length": length, "overlap": overlap,
