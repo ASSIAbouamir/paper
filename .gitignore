@@ -42,3 +42,18 @@ checkpoints/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# v2
+runs/
+data/ml1m/
+data/beauty/
+data/sports/
+data/raw/
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.out
+paper/*.fdb_latexmk
+paper/*.fls
+__pycache__/

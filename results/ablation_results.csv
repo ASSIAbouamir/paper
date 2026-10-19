@@ -1,7 +1,0 @@
-Configuration,HR@10,NDCG@10,Cold_HR@10,ILD@10,Catalog_Cov,Gain_HR_vs_SASRec,Gain_Cold_vs_SASRec,Role_Analytique
-1. Baseline SASRec (Collaboratif pur),0.2740,0.1620,0.1380,0.4050,24.5%,+0.00%,+0.00%,Baseline séquentielle de référence
-2. + LLM Embeddings (Fusion linéaire statique),0.2920,0.1750,0.1820,0.4180,28.9%,+6.57%,+31.88%,Apport sémantique de base
-3. + Length-Adaptive Gate (Sans diversité),0.3180,0.1940,0.2450,0.4350,36.2%,+16.06%,+77.54%,Percée majeure sur le Cold-Start
-4. + Naive MMR (Diversification naïve fixe),0.2860,0.1690,0.2180,0.6120,39.5%,+4.38%,+57.97%,Hausse d'ILD mais effondrement de précision
-5. + AC-MMR seul (Sans De-biasing),0.3110,0.1890,0.2410,0.5920,38.4%,+13.50%,+74.64%,Préservation de la précision sous diversité
-6. Modèle Complet (Gate + AC-MMR + De-biasing),0.3090,0.1870,0.2390,0.5980,47.5%,+12.77%,+73.19%,Équilibre optimal Précision-Diversité-Couverture

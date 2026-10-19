@@ -1,25 +1,6 @@
-# Core dependencies for Selective Evidence Routing — RecSys Paper
-torch>=2.1.0
-transformers>=4.35.0
-datasets
-numpy>=1.24.0
-pandas>=2.0.0
-scikit-learn>=1.3.0
-tqdm>=4.66.0
-sentence-transformers>=2.2.2
-
-# Statistical analysis (calibration, bootstrap tests)
-scipy>=1.11.0
-
-# Feature importance analysis
-shap>=0.44.0
-
-# Visualization (reliability diagrams, publication figures)
-matplotlib>=3.7.0
-seaborn>=0.13.0
-
-# Optional: experiment tracking
-wandb
-
-# Optional: GPU quantization (Linux only)
-bitsandbytes>=0.41.0; platform_system != "Windows"
+torch>=2.1
+numpy
+scipy
+scikit-learn
+sentence-transformers>=2.2
+pytest
