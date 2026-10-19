@@ -36,6 +36,9 @@ VARIANTS: Dict[str, dict] = {
     "bix_gate":       dict(kind="dual", cross=True, gate=True),
     "bix":            dict(kind="dual", cross=True, gate=True, penalty=True),  # full model
     "bix_lastpos":    dict(kind="dual", cross=True, gate=True, penalty=True, positions="last"),
+    # + per-stream auxiliary CE (each stream must also predict the next item on its own)
+    "dual_late_aux":  dict(kind="dual", aux=0.5),
+    "bix_aux":        dict(kind="dual", cross=True, gate=True, penalty=True, aux=0.5),
 }
 POSTHOC = {"poe"}  # late fusion of separately trained sasrec + text experts
 
@@ -157,7 +160,11 @@ def train_model(model: SeqRec, train, val, dev, cfg) -> Tuple[dict, int, float]:
             h = model.encode(x, tables)
             hs = {k: v[sel] for k, v in h.items()}
             ys = y[sel]
-            if loss_kind == "ce":
+            if loss_kind == "ce" and cfg.get("aux"):
+                out, sc, ss = model.logits(hs, tables, streams=True)
+                loss = F.cross_entropy(out, ys) + cfg["aux"] * (
+                    F.cross_entropy(sc[:, 1:], ys - 1) + F.cross_entropy(ss[:, 1:], ys - 1))
+            elif loss_kind == "ce":
                 loss = F.cross_entropy(model.logits(hs, tables), ys)
             else:  # BCE with one uniformly sampled negative per position
                 neg = torch.randint(1, model.num_items + 1, ys.shape, device=dev, generator=None)
@@ -314,7 +321,7 @@ def main():
         return
 
     vcfg = VARIANTS[a.variant]
-    cfg.update({k: v for k, v in vcfg.items() if k in ("loss", "positions")})
+    cfg.update({k: v for k, v in vcfg.items() if k in ("loss", "positions", "aux")})
     train, val, test = make_splits(ds["user_seqs"], cfg["max_len"])
     model = build_model(ds, emb, vcfg, cfg).to(dev)
     run_dir = os.path.join(run_root, a.variant, f"seed{a.seed}")

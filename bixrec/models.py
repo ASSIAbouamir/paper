@@ -179,8 +179,9 @@ class SeqRec(nn.Module):
         lam = self.lambda_max * torch.sigmoid(self.pen) if self.penalty else torch.zeros_like(w)
         return w, lam
 
-    def logits(self, h: Dict[str, torch.Tensor], tables: Dict[str, torch.Tensor]) -> torch.Tensor:
-        """h: hidden rows (M, d) per stream -> scores (M, N+1), column 0 = -inf."""
+    def logits(self, h: Dict[str, torch.Tensor], tables: Dict[str, torch.Tensor], streams: bool = False):
+        """h: hidden rows (M, d) per stream -> scores (M, N+1), column 0 = -inf.
+        streams=True (dual only) also returns the raw per-stream scores (sc, ss), column 0 unmasked."""
         if self.kind == "dual":
             sc = h["c"] @ tables["c"].T
             ss = h["s"] @ tables["s"].T
@@ -189,7 +190,7 @@ class SeqRec(nn.Module):
         else:
             out = h["x"] @ tables["x"].T
         out[:, 0] = float("-inf")
-        return out
+        return (out, sc, ss) if streams else out
 
     def stream_logits(self, h, tables):
         """Per-stream scores of a dual model (for analysis)."""

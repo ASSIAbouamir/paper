@@ -10,7 +10,7 @@ write once results are in.
 ## What is compared
 
 All models share one transformer block, one loss (full-softmax cross-entropy at every position), one training
-budget and one early-stopping rule; only the fusion design changes.
+budget and one early-stopping rule; only the fusion design changes (one exception, the `*_aux` objective study below).
 
 | variant | description |
 |---|---|
@@ -23,6 +23,13 @@ budget and one early-stopping rule; only the fusion design changes.
 | `bix_nogate`, `bix_gate` | + bilateral cross-attention (without / with gate) |
 | `bix` | full model: cross-attention + gate + penalty |
 | `sasrec_lastpos`, `sasrec_bce`, `bix_lastpos` | protocol audit: loss on last position only / BCE with one negative |
+| `dual_late_aux`, `bix_aux` | objective study: `dual_late` / `bix` + a per-stream auxiliary loss (see below) |
+
+**Exception to "one loss":** `dual_late_aux` and `bix_aux` train with
+`CE(fused) + 0.5 · (CE(ID stream) + CE(content stream))`, so each stream must also predict the next item on its own.
+They change the objective, not the fusion design, so compare `bix_aux` only with its loss-matched control
+`dual_late_aux`, and keep both out of the main and ablation tables. They are not in `run_all` stages; run them by hand,
+e.g. `python -m bixrec.train --data data/sports --variant bix_aux --seed 42 --out runs --epochs 100 --patience 10 --min_epochs 30`.
 
 Protocol: 5-core, chronological leave-one-out, repeated user–item pairs removed, full-catalog ranking without
 negative sampling, ties counted against the target, 5 seeds, Holm-corrected paired tests.
