@@ -186,30 +186,33 @@ def test_resume_refuses_changed_settings(tmp_path):
     seqs = [[(u + i) % 50 + 1 for i in range(8)] for u in range(20)]
     train, val, _ = make_splits(seqs, 10)
     cfg = dict(lr=1e-2, wd=0.0, seed=0, epochs=2, patience=5, min_epochs=0, verbose=False, batch=8, d=16,
-               ckpt=str(tmp_path / "ckpt.pt"))
-    train_model(_model("id"), train, val, torch.device("cpu"), dict(cfg, epochs=1))  # leaves ckpt after ep 1
+               ckpt=str(tmp_path / "ckpt.pt"), git_sha="abc")
+    train_model(_model("id"), train, val, torch.device("cpu"), cfg)  # leaves its checkpoint behind
     assert os.path.exists(cfg["ckpt"])
-    with pytest.raises(SystemExit):
-        train_model(_model("id"), train, val, torch.device("cpu"), dict(cfg, lr=1e-3))
+    for changed in (dict(lr=1e-3), dict(epochs=1), dict(git_sha="def")):  # settings, stopping rule, code
+        with pytest.raises(SystemExit):
+            train_model(_model("id"), train, val, torch.device("cpu"), dict(cfg, **changed))
     train_model(_model("id"), train, val, torch.device("cpu"), cfg)  # same settings: resumes
 
 
 def test_run_all_guards(tmp_path):
     from bixrec.run_all import check_fresh, fingerprint
-    for bad in ("--lr 1e-4", "--d 128", "--emb x.pt", "--tag t", "--seed 1", "--no_test"):
+    for bad in ("--lr 1e-4", "--d 128", "--emb x.pt", "--tag t", "--seed 1", "--no_test", "--dropout 0.1",
+                "--max_len 5", "--no_te", "--allow_d", "--see 1"):  # incl. argparse prefix abbreviations
         with pytest.raises(SystemExit):
             fingerprint(bad)
     fp = fingerprint("--device cpu --epochs 100 --patience 10 --min_epochs 30")
+    assert fingerprint("--device cpu --epochs 100 --patience 10 --min_epochs 30 --max_users 300") != fp
+    hp = {"d": 64, "lr": {"bix": 1e-3}, "encoder": "lsa"}
     run = tmp_path / "metrics.json"
-    cfg = dict(fp, d=64, lr=1e-3)
-    run.write_text(json.dumps({"config": cfg}))
-    check_fresh(str(run), fp, {"d": 64, "lr": {"bix": 1e-3}}, "bix")  # current: fine
-    for stale in (dict(fp, epochs=200), None):
+    run.write_text(json.dumps({"config": dict(fp, d=64, lr=1e-3, emb="text_emb_lsa.pt", device="auto"),
+                               "env": {"device": "cpu"}}))
+    check_fresh(str(run), fp, hp, "bix")  # current: fine
+    check_fresh(str(run), fp, hp, "poe")  # variants without a tuned lr still get d / encoder checks
+    for stale_fp, stale_hp in ((dict(fp, epochs=200), None), (fp, dict(hp, d=128)), (fp, dict(hp, encoder="sbert")),
+                               (dict(fp, device="mps"), None)):
         with pytest.raises(SystemExit):
-            if stale:
-                check_fresh(str(run), stale)
-            else:
-                check_fresh(str(run), fp, {"d": 128, "lr": {"bix": 1e-3}}, "bix")
+            check_fresh(str(run), stale_fp, stale_hp, "bix")
 
 
 def _tiny_dataset(path):

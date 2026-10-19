@@ -67,7 +67,8 @@ DATASET_DEFAULTS = {
 DEFAULT_D, DEFAULT_LR = 64, 1e-3
 TIE_SEED = 0
 # settings that must not change between a checkpoint and its resumed run
-RESUME_KEYS = ("d", "lr", "dropout", "max_len", "emb", "aux", "loss", "positions", "batch", "wd", "layers", "heads")
+RESUME_KEYS = ("d", "lr", "dropout", "max_len", "emb", "aux", "loss", "positions", "batch", "wd", "layers", "heads",
+               "epochs", "patience", "min_epochs", "max_users", "git_sha")
 
 
 # ---------------------------------------------------------------------------
@@ -387,7 +388,7 @@ def run_poe(ds, emb, cfg, run_root, dev, env):
     nd = [summarize(r)["NDCG@10"] for r in val_r]
     best_a = float(alphas[int(np.argmax(nd))])
     results = {}
-    for tag, a in (("poe", best_a), ("poe50", 0.5)):
+    for tag, a in (("poe50", 0.5), ("poe", best_a)):  # poe last: its metrics.json marks the pair done
         ranks = {"val": val_r[int(round(a * 20))]}
         ranks["val_masked"], = fused_ranks(val, [a], masked=True)
         metrics = {"variant": tag, "seed": cfg["seed"], "alpha": a, "params": 0, "env": env,
@@ -402,7 +403,7 @@ def run_poe(ds, emb, cfg, run_root, dev, env):
 
 
 def build_parser() -> argparse.ArgumentParser:
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(allow_abbrev=False)  # no prefix tricks around run_all's flag guard
     ap.add_argument("--data", required=True)
     ap.add_argument("--variant", required=True, choices=sorted(VARIANTS) + sorted(POSTHOC))
     ap.add_argument("--seed", type=int, default=42)
@@ -440,6 +441,7 @@ def main():
     cfg["max_len"] = a.max_len or dflt["max_len"]
     cfg["verbose"] = not a.quiet
     cfg["dataset"] = name
+    cfg["git_sha"] = sha  # part of the resume signature: a resumed run never mixes code versions
     dev = pick_device(a.device)
     set_seed(a.seed)
     env = {"device": dev.type, "git_sha": sha, "torch": torch.__version__,

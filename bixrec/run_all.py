@@ -14,8 +14,8 @@ Stages:
                   (equal tuning budget; model-specific settings such as aux = 0.5 are fixed, never tuned)
                Ties go to the earlier option in each list.
     core     : sasrec, text, hybrid, dual_late, bix, *_aux, *_ef_aux, then poe (needs sasrec + text)
-    ablation : dual_late_pen, bix_nogate, bix_gate                  (beauty, sports, ml100k)
-    audit    : sasrec_lastpos, sasrec_bce, bix_lastpos               (ml100k)
+    ablation : dual_late_pen, bix_nogate, bix_gate                  (beauty, sports, ml100k, ml1m)
+    audit    : sasrec_lastpos, sasrec_bce, bix_lastpos               (ml100k, ml1m)
 Training settings shared by all runs (epochs, patience, device, ...) go in --extra; they are fingerprinted, and a
 finished run or tuning trial made with other settings is reported as stale instead of being silently reused.
 """
@@ -28,7 +28,7 @@ import sys
 import time
 from typing import Dict, List
 
-from .train import build_parser
+from .train import build_parser, pick_device
 
 SEEDS = [42, 123, 2024, 7, 99]
 STAGES = {
@@ -50,8 +50,8 @@ TUNE_LR = [1e-3, 1e-4]
 TUNE_SEED = 42
 # flags that run_all sets itself; allowing them in --extra would bypass tuning or break the skip logic
 FORBIDDEN_EXTRA = {"--d", "--lr", "--emb", "--tag", "--out", "--seed", "--variant", "--no_test", "--data",
-                   "--allow_dirty"}
-FINGERPRINT = ("epochs", "patience", "min_epochs", "batch", "wd", "layers", "heads", "device")
+                   "--allow_dirty", "--dropout", "--max_len"}
+FINGERPRINT = ("epochs", "patience", "min_epochs", "batch", "wd", "layers", "heads", "max_users", "device")
 
 
 def encoder_candidates(ds: str) -> List[str]:
@@ -64,18 +64,22 @@ def fingerprint(extra: str) -> Dict:
     if bad:
         raise SystemExit(f"--extra may not contain {bad}: run_all sets these itself")
     a = build_parser().parse_args(["--data", "-", "--variant", "sasrec"] + toks)
-    return {k: getattr(a, k) for k in FINGERPRINT}
+    fp = {k: getattr(a, k) for k in FINGERPRINT}
+    fp["device"] = pick_device(a.device).type  # the device actually used, not the request ("auto")
+    return fp
 
 
 def check_fresh(metrics_path: str, fp: Dict, hp: Dict = None, variant: str = None):
     """A finished run is reused only if it was made with the current settings."""
     with open(metrics_path) as f:
-        c = json.load(f)["config"]
+        m = json.load(f)
+    c = dict(m["config"], device=m.get("env", {}).get("device"))
     diff = {k: (c.get(k), v) for k, v in fp.items() if c.get(k) != v}
-    if hp and variant in hp.get("lr", {}):
-        for k, v in (("d", hp["d"]), ("lr", hp["lr"][variant])):
-            if c.get(k) != v:
-                diff[k] = (c.get(k), v)
+    if hp:
+        want = {"d": hp["d"], "emb": f"text_emb_{hp['encoder']}.pt"}
+        if variant in hp.get("lr", {}):
+            want["lr"] = hp["lr"][variant]
+        diff.update({k: (c.get(k), v) for k, v in want.items() if c.get(k) != v})
     if diff:
         raise SystemExit(f"stale run {metrics_path}: (was, now) = {diff}; delete it to rerun with current settings")
 
@@ -162,8 +166,8 @@ def tune(a, ds: str, fp: Dict):
             if v == "sasrec" and lr == TUNE_LR[0]:
                 scores[lr] = d_scores[d]  # identical configuration, already trained in step 2
                 continue
-            scores[lr] = trials[f"{v}@d{d}_lr{lr:g}"] = trial(v, f"d{d}_lr{lr:g}", "--d", str(d), "--lr", str(lr),
-                                                             *emb)
+            tag = f"d{d}_lr{lr:g}_{enc}"  # the encoder is part of the trial's identity
+            scores[lr] = trials[f"{v}@{tag}"] = trial(v, tag, "--d", str(d), "--lr", str(lr), *emb)
         lrs[v] = pick(scores, TUNE_LR)
     write_json(hp_path, {"d": d, "lr": lrs, "encoder": enc, "fingerprint": fp,
                          "selected_on": f"validation NDCG@10, seed {TUNE_SEED}; test split never evaluated",
@@ -172,7 +176,7 @@ def tune(a, ds: str, fp: Dict):
 
 
 def main():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(allow_abbrev=False)
     ap.add_argument("--data_root", default="data")
     ap.add_argument("--runs", default="runs")
     ap.add_argument("--tune_runs", default="runs_tune")
@@ -207,6 +211,10 @@ def main():
             for seed in a.seeds or seeds:
                 for v in variants:
                     done = os.path.join(a.runs, ds, v, f"seed{seed}", "metrics.json")
+                    if v == "poe" and os.path.exists(done):  # PoE is stale if an expert was retrained after it
+                        experts = [os.path.join(a.runs, ds, e, f"seed{seed}", "metrics.json") for e in ("sasrec", "text")]
+                        if any(os.path.getmtime(e) > os.path.getmtime(done) for e in experts if os.path.exists(e)):
+                            raise SystemExit(f"stale run {done}: an expert was retrained after it; delete it")
                     if os.path.exists(done):
                         check_fresh(done, fp, hp, v)
                         continue

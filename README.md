@@ -66,7 +66,8 @@ Rules, fixed before any v4 run:
    loss, the `ef` stream and the v4 protocol were designed after that. `beauty_text` / `sports_text` have the same
    users, sequences and test targets as Beauty/Sports (only the item content differs), so they are **not** unseen
    data. **Toys (S3-Rec release) is the only untouched dataset**: it is a held-out confirmation and should not be
-   inspected before the protocol and model list are frozen. Every run records its device, git commit (runs refuse
+   inspected before the protocol and model list are frozen. Its validation split is used only to tune its own
+   hyperparameters; it is excluded from selecting the model (`make_tables.HELDOUT`). Every run records its device, git commit (runs refuse
    uncommitted code) and memory; `make_tables` warns when a dataset mixes devices or commits.
 
 ```bash

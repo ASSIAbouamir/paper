@@ -55,6 +55,8 @@ AUDIT_ROWS = ["sasrec_lastpos", "sasrec_bce", "sasrec", "bix_lastpos", "bix"]
 SPLIT = "test"         # primary evaluation split (see module docstring)
 PROPOSED = None        # set in main() by choose_proposed(); None until every main model has run everywhere
 N_SEEDS = 3            # set in main(): the largest seed count of any main-table cell
+AUDIT_SEEDS = 3        # run_all audit stage uses the first three seeds by design
+HELDOUT = {"toys"}     # held-out confirmation data: never used to select the model
 
 # Published results on the same Amazon Beauty / Sports / Toys data (5-core; identical user/item/interaction
 # counts), leave-one-out, full ranking, history items NOT removed. Copied from Kim et al., "DIFF: Dual
@@ -93,11 +95,11 @@ def ranks(run, split=None):
     return np.load(os.path.join(run["_dir"], f"ranks_{split or SPLIT}.npy"))
 
 
-def fmt(s, scale=100, bold=False, digits=2):
+def fmt(s, scale=100, bold=False, digits=2, n_expected=None):
     if s is None:
         return "--"
     txt = f"{s['mean'] * scale:.{digits}f}" + (f"\\,$\\pm$\\,{s['sd'] * scale:.{digits}f}" if s["n"] > 1 else "")
-    if s["n"] < N_SEEDS:  # incomplete: mark the number of seeds
+    if s["n"] < (n_expected or N_SEEDS):  # incomplete: mark the number of seeds
         txt += f"$^{{n={s['n']}}}$"
     return f"\\textbf{{{txt}}}" if bold else txt
 
@@ -116,7 +118,7 @@ def choose_proposed(runs):
     """Main-table model with the best normalised validation NDCG@10, averaged over datasets. Reads validation
     numbers only, so the choice cannot depend on test results. Returns (None, info) until every main-table model
     has runs on every dataset, instead of silently choosing among the models that happen to be finished."""
-    ds_list = [ds for ds, _ in DATASETS if ds in runs]
+    ds_list = [ds for ds, _ in DATASETS if ds in runs and ds not in HELDOUT]
     missing = [f"{ds}:{v}" for ds in ds_list for v in MAIN_ROWS if not runs[ds].get(v)]
     if not ds_list or missing:
         return None, {"missing": missing}
@@ -152,7 +154,8 @@ def hparam_report(runs, data_root):
         for v, r in vs.items():
             for s, m in r.items():
                 c = m.get("config", {})
-                if c.get("d") != hp["d"] or (v in hp["lr"] and c.get("lr") != hp["lr"][v]):
+                if c.get("d") != hp["d"] or (v in hp["lr"] and c.get("lr") != hp["lr"][v]) or \
+                        c.get("emb") != f"text_emb_{hp['encoder']}.pt":
                     bad.append(f"{ds}:{v}:seed{s} d={c.get('d')} lr={c.get('lr')}")
     if bad:
         print(f"[warn] runs not using the tuned hyperparameters: {bad}")
@@ -254,13 +257,13 @@ def table_significance(runs):
     return "\n".join(lines), out
 
 
-def table_rows(runs, rows, label, caption, key="NDCG@10"):
+def table_rows(runs, rows, label, caption, key="NDCG@10", n_expected=None):
     lines = [r"\begin{table}[t]", r"\centering", f"\\caption{{{caption}}}", f"\\label{{{label}}}", r"\small",
              r"\begin{tabular}{l" + "c" * len(DATASETS) + "}", r"\toprule",
              "Variant & " + " & ".join(d for _, d in DATASETS) + r" \\", r"\midrule"]
     for v in rows:
-        lines.append(f"{NAMES[v]} & " + " & ".join(fmt(metric_summary(runs, ds, v, key)) for ds, _ in DATASETS)
-                     + r" \\")
+        lines.append(f"{NAMES[v]} & " + " & ".join(fmt(metric_summary(runs, ds, v, key), n_expected=n_expected)
+                                                   for ds, _ in DATASETS) + r" \\")
     lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}", ""]
     return "\n".join(lines)
 
@@ -270,7 +273,7 @@ def table_masking(runs):
     lines = [r"\begin{table*}[t]", r"\centering",
              r"\caption{Effect of removing the history items in the input window from the ranking (NDCG@10, \%; "
              r"the masked column corresponds to BSARec/DLFSRec-style evaluation). Because repeated user--item pairs "
-             f"are removed, the target is never in the history and masking can only help. {DAG_NOTE}}}",
+             f"are removed, the target is never in the history and masking can only help. {DAG_NOTE} {SEED_NOTE}}}",
              r"\label{tab:mask}", r"\small", r"\begin{tabular}{l" + "cc" * len(DATASETS) + "}", r"\toprule",
              " & " + " & ".join(f"\\multicolumn{{2}}{{c}}{{{d}}}" for _, d in DATASETS) + r" \\",
              "Model & " + " & ".join(["kept & removed"] * len(DATASETS)) + r" \\", r"\midrule"]
@@ -459,7 +462,7 @@ def main():
     tex += "\\newcommand{\\tabAudit}{\n" + table_rows(
         runs, AUDIT_ROWS, "tab:audit",
         r"Training-protocol audit (NDCG@10, \%). ``Last position only'' and ``BCE + 1 negative'' "
-        r"reproduce the training choices of our earlier pipeline. " + SEED_NOTE) + "}\n"
+        r"reproduce the training choices of our earlier pipeline. " + SEED_NOTE, n_expected=AUDIT_SEEDS) + "}\n"
     tex += "\\newcommand{\\tabMask}{\n" + table_masking(runs) + "}\n"
     tex += "\\newcommand{\\tabLength}{\n" + len_tex + "}\n"
     tex += "\\newcommand{\\tabOverlap}{\n" + ov_tex + "}\n"
@@ -468,7 +471,8 @@ def main():
     with open(os.path.join(a.out, "tables.tex"), "w") as f:
         f.write(tex)
     summary = {"selected": {"model": PROPOSED, "info": sel_info,
-                            "rule": "best mean normalised validation NDCG@10 over datasets (history kept)"},
+                            "rule": "best mean normalised validation NDCG@10 over datasets (history kept), held-out "
+                                    f"datasets {sorted(HELDOUT)} excluded"},
                "excluded_datasets": a.exclude, "not_using_tuned_hparams": hp_bad,
                "significance": sig, "length": length, "overlap": overlap, "env": env,
                "runs": {ds: {v: sorted(r) for v, r in vs.items()} for ds, vs in runs.items()}}
