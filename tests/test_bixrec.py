@@ -70,3 +70,17 @@ def test_stats():
     b = np.array([1, 0, 0, 1, 1], bool)
     assert mcnemar_exact(a, b)["n10"] == 1
     assert left_pad([1, 2], 4) == [0, 0, 1, 2]
+
+
+def test_aux_stream_logits():
+    """streams=True leaves the fused score unchanged and the per-stream CE trains."""
+    m = _model("dual", cross=True, gate=True, penalty=True).eval()
+    t = m.item_tables()
+    h = {k: v[:, -1] for k, v in m.encode(torch.tensor([[0, 0, 0, 0, 0, 0, 0, 5, 6, 7]]), t).items()}
+    out, sc, ss = m.logits(h, t, streams=True)
+    assert torch.equal(out, m.logits(h, t)) and sc.shape == ss.shape == out.shape
+    y = torch.tensor([8])
+    loss = torch.nn.functional.cross_entropy(out, y) + 0.5 * (
+        torch.nn.functional.cross_entropy(sc[:, 1:], y - 1) + torch.nn.functional.cross_entropy(ss[:, 1:], y - 1))
+    loss.backward()
+    assert torch.isfinite(loss) and m.item_emb.weight.grad is not None
