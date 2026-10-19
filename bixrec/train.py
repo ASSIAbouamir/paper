@@ -124,6 +124,8 @@ def train_model(model: SeqRec, train, val, dev, cfg) -> Tuple[dict, int, float]:
         torch.set_rng_state(c["torch_rng"])
         np.random.set_state(c["np_rng"])
         random.setstate(c["py_rng"])
+        if c.get("cuda_rng") is not None and torch.cuda.is_available():  # dropout / BCE negatives on GPU
+            torch.cuda.set_rng_state_all(c["cuda_rng"])
         best, best_state, best_ep, bad, start_ep = c["best"], c["best_state"], c["best_ep"], c["bad"], c["ep"] + 1
         t0 -= c["elapsed"]
         print(f"resumed from epoch {c['ep']}", flush=True)
@@ -184,7 +186,9 @@ def train_model(model: SeqRec, train, val, dev, cfg) -> Tuple[dict, int, float]:
         if ckpt:
             torch.save({"model": model.state_dict(), "opt": opt.state_dict(), "gen": g.get_state(),
                         "torch_rng": torch.get_rng_state(), "np_rng": np.random.get_state(),
-                        "py_rng": random.getstate(), "best": best, "best_state": best_state,
+                        "py_rng": random.getstate(),
+                        "cuda_rng": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
+                        "best": best, "best_state": best_state,
                         "best_ep": best_ep, "bad": bad, "ep": ep, "elapsed": time.time() - t0}, ckpt + ".tmp")
             os.replace(ckpt + ".tmp", ckpt)
     model.load_state_dict(best_state)
