@@ -11,7 +11,7 @@
 \usepackage[hidelinks]{hyperref}
 
 \newtheorem{proposition}{Proposition}
-% Red notes mark results that are still being computed (Beauty ablation, Amazon Sports).
+% Red notes would mark results still being computed; none remain.
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
 % All numbers below come from paper/generated/tables.tex, produced by `python -m bixrec.make_tables`.
@@ -31,7 +31,8 @@ Sequential recommenders increasingly combine a collaborative expert over item ID
 content. The usual recipe keeps the two experts separate and merges their scores, either with a static rule or with
 a learned per-user router. We first give a model-free argument that bounds what any per-user selection between two
 experts can gain: at most the users that only the semantic expert hits, and only if the selector is right on more
-than half of the users it moves. On Amazon Beauty the measured base rate is 14\%, so routing has little to gain. We
+than half of the users it moves. On two Amazon datasets the measured base rate is 14\%, so routing has little to
+gain. We
 then ask whether the experts should instead meet inside their representations. BiXRec is a dual-stream transformer
 in which an ID stream and a content stream exchange information at every layer through gated bilateral
 cross-attention and are scored jointly with a candidate-level disagreement penalty. Every model in our study shares
@@ -39,10 +40,11 @@ one implementation, loss (full-softmax cross-entropy at all positions), budget a
 trained late-fusion control separates the effect of cross-attention from that of joint training. On MovieLens-100K,
 where item content is a title, a year and genres, BiXRec improves NDCG@10 over SASRec by \gainMlHundredSasrec\% and
 over early fusion by \gainMlHundredHybrid\% (Holm-corrected $p<0.05$), while its \gainMlHundredPoe\% over a tuned
-product of experts is not significant with 943 test users. On Amazon Beauty, where content is a handful of
-category and brand attributes, BiXRec beats SASRec (\gainBeautySasrec\%) and the joint late-fusion control
-(\gainBeautyLate\%), and an ablation attributes the gain over late fusion to cross-attention, but simple early
-fusion is better still (BiXRec \gainBeautyHybrid\%). Cross-attention therefore
+product of experts is not significant with 943 test users. On Amazon Beauty and Sports, where content is a
+handful of category and brand attributes, BiXRec beats the joint late-fusion control on every seed
+(\gainBeautyLate\% and \gainSportsLate\%), and an ablation attributes this to cross-attention, but simple early
+fusion is better on both (BiXRec \gainBeautyHybrid\% and \gainSportsHybrid\%), and on Sports BiXRec does not
+improve on SASRec. Cross-attention therefore
 pays off when item content is informative and is not a substitute for early fusion when it is not. A
 training-protocol audit shows that training on the last position only cuts SASRec's NDCG@10 by about 75\%, a
 larger effect than any fusion design we compare.
@@ -151,9 +153,9 @@ one hit, a moved user in $\mathcal{U}_{10}$ loses one. The maximum is reached fo
 The bound covers routing between finished rankings. It does not cover rules that build a new score per candidate,
 such as a product of experts or BiXRec, which can hit users that neither expert hits. Table~\ref{tab:overlap}
 reports the overlap of our separately trained experts. On Beauty only 234 users are hit by the content expert
-alone, against 1,486 hit by SASRec alone: a selector that has no information about the outcome is right on 14\% of
-the users it moves, far below the 50\% it needs to break even, and even a perfect selector could add at most 1\%
-of users. On MovieLens-100K the two groups are of similar size (48 and 50 users), so the base rate is close to
+alone, against 1,486 hit by SASRec alone, and on Sports 239 against 1,434: a selector that has no information about
+the outcome is right on 14\% of the users it moves, far below the 50\% it needs to break even, and even a perfect
+selector could add at most 1\% of users. On MovieLens-100K the two groups are of similar size (48 and 50 users), so the base rate is close to
 break-even and the bound is less restrictive, but the ceiling is again small (5\% of users). This is why we do not
 pursue per-user routing and turn to fusion inside the representations.
 
@@ -226,11 +228,11 @@ SASRec-style encoders is two cross-attention modules and two gates per layer.
 
 \textbf{Datasets.} MovieLens-100K~\cite{harper2015movielens}, in the release distributed with
 RecBole~\cite{zhao2021recbole}, whose item content is the title, release year and genres; and Amazon
-Beauty~\cite{mcauley2015image} in the 5-core release of S3-Rec~\cite{zhou2020s3rec}, whose item content is a set of
-anonymised category and brand attribute identifiers (on average 3--4 per item). The two datasets therefore span rich
-and poor item content. We apply an iterative 5-core filter, order interactions by time (ties by file order) and
+Beauty and Sports \& Outdoors~\cite{mcauley2015image} in the 5-core releases of S3-Rec~\cite{zhou2020s3rec}, whose
+item content is a set of anonymised category and brand attribute identifiers (on average 3--4 per item). The
+datasets therefore span rich and poor item content. We apply an iterative 5-core filter, order interactions by time (ties by file order) and
 keep the first occurrence of every user--item pair, so the test target never appears in the input history
-(Table~\ref{tab:data}). \todo{Amazon Sports (S3-Rec release) is being run with the same protocol and will be added.}
+(Table~\ref{tab:data}).
 
 \tabData
 
@@ -246,7 +248,7 @@ pre-trained sentence encoder is a drop-in replacement in our code.
 
 \textbf{Models.} All models use the same transformer block (pre-norm, causal and key-padding masks), $d=64$, two
 layers, two heads, maximum length 200 and dropout 0.2 on MovieLens-100K, and maximum length 50 and dropout 0.5 on
-Beauty. \emph{SASRec}~\cite{kang2018sasrec}: ID stream only. \emph{Content expert}: content stream only, no IDs.
+the Amazon datasets. \emph{SASRec}~\cite{kang2018sasrec}: ID stream only. \emph{Content expert}: content stream only, no IDs.
 \emph{Static PoE}: separately trained SASRec and content expert fused as $\alpha\log p^C+(1-\alpha)\log p^S$, with
 $\alpha=0.5$ or $\alpha\in\{0,0.05,\dots,1\}$ tuned on validation NDCG@10. \emph{Early fusion}: one stream whose item
 embedding is $E^c_i+E^s_i$. \emph{Joint late fusion}: BiXRec without cross-attention, i.e.\ two streams that never
@@ -279,13 +281,16 @@ gains over tuned PoE (\gainMlHundredPoe\%) and over joint late fusion (\gainMlHu
 seed-to-seed standard deviation (0.6 NDCG points) is of the same size as these gaps. With 943 test users,
 MovieLens-100K can only detect large effects.
 
-On Beauty the picture changes. BiXRec improves on SASRec (\gainBeautySasrec\%), on static PoE with
-$\alpha=0.5$ and on joint late fusion (\gainBeautyLate\%), all significant and on every seed, and matches tuned PoE.
-Early fusion, however, is the best model on Beauty: BiXRec is \gainBeautyHybrid\% below it, on all three seeds.
-The content expert alone is weak on Beauty (HR@10 below 2\%), and both late-fusion variants learn to put most of
-the weight on the ID stream ($w\approx0.9$ for joint late fusion, $w\approx0.83$ for BiXRec, against $w\approx0.54$
-on MovieLens-100K). When item content is a few attribute tags, adding it to the ID embedding is more useful than
-running a second stream over it.
+On the Amazon datasets the picture changes. Early fusion is the best model on both, and BiXRec is below it on
+every seed (\gainBeautyHybrid\% on Beauty, \gainSportsHybrid\% on Sports, both significant). On Beauty BiXRec
+improves on SASRec (\gainBeautySasrec\%), on static PoE with $\alpha=0.5$ and on joint late fusion
+(\gainBeautyLate\%), all significant and on every seed, and matches tuned PoE. On Sports it beats joint late fusion
+(\gainSportsLate\%, significant, every seed) but only matches SASRec (\gainSportsSasrec\%, not significant) and is
+below tuned PoE (\gainSportsPoe\%, significant). The content expert alone is weak on both (HR@10 below 2\%), and
+the dual-stream models learn to put most of the weight on the ID stream ($w\approx0.9$ for joint late fusion,
+$w\approx0.8$ for BiXRec, against $w\approx0.54$ on MovieLens-100K). When item content is a few attribute
+tags, adding it to the ID embedding is more useful than running a second stream over it, and a second stream can
+even cost accuracy: joint late fusion is at or below SASRec on both Amazon datasets.
 
 \subsection{Where does the gain come from?}
 \tabAbl
@@ -301,27 +306,30 @@ cross-attention gives a further $+0.06$ ($p_\mathrm{Holm}=0.04$). Overall, BiXRe
 fusion on Beauty ($p_\mathrm{Holm}<0.001$). On MovieLens-100K no step survives the correction; the largest
 is again the penalty on top of gated cross-attention ($+0.38$ points, $p_\mathrm{Holm}=0.08$). Cross-attention,
 not joint training, is therefore what lifts BiXRec above late fusion when the effect is measurable, and the penalty
-helps only in combination with it.
+helps only in combination with it. We did not run the ablation on Sports.
 
 \subsection{Relation to the selection bound}
 The last column of Table~\ref{tab:overlap} gives the hits BiXRec adds over SASRec. On MovieLens-100K BiXRec adds 16
 hits, a third of the 48 that an oracle selector could add; on Beauty it adds 40 hits, which no selector working at the
-measured 14\% base rate could deliver, since such a selector loses hits. Candidate-level fusion is not limited by the
-bound, because it can rank targets that neither expert ranks in its top 10.
+measured 14\% base rate could deliver, since such a selector loses hits. On Sports BiXRec has 15 hits fewer than
+SASRec, although an oracle selector could add 239. Candidate-level fusion is not limited by the bound, because it can
+rank targets that neither expert ranks in its top 10, but escaping the bound does not guarantee a gain.
 
 \subsection{Who benefits?}
 \tabLength
 Table~\ref{tab:length} splits test users into terciles of history length. On MovieLens-100K BiXRec gains most on
 the shortest histories (6.76\% NDCG@10 against 5.85\% for SASRec) and also leads on medium histories; on the longest
-histories tuned PoE is slightly ahead. On Beauty early fusion is best in every tercile, and BiXRec is above SASRec in
-every tercile. The gate is meant to help short histories, and this is where BiXRec's advantage on MovieLens-100K is
+histories tuned PoE is slightly ahead. On both Amazon datasets early fusion is best in every tercile except the
+medium Sports tercile, where tuned PoE leads; BiXRec is above SASRec in every Beauty tercile, and on Sports it is level
+with SASRec on short and long histories and below it on medium ones. The gate is meant to help short histories, and this is where BiXRec's advantage on MovieLens-100K is
 largest, but the ablation shows the gate alone does not explain it.
 
 \subsection{History masking}
 \tabMask
 Removing history items from the ranking can only improve the rank of the target here, and it raises every model
-substantially (NDCG@10 rises by 69--84\% on MovieLens-100K and by 35--37\% on Beauty). On Beauty the order of
-the models is essentially unchanged (only SASRec and joint late fusion, which differ by 0.02 points, swap). On MovieLens-100K, whose users have long histories, masking reorders the fusion models: joint
+substantially (NDCG@10 rises by 69--84\% on MovieLens-100K and by 32--37\% on the Amazon datasets). On the Amazon
+datasets the order of the models is essentially unchanged (on Sports it is identical; on Beauty only SASRec and joint
+late fusion, which differ by 0.02 points, swap). On MovieLens-100K, whose users have long histories, masking reorders the fusion models: joint
 late fusion, tuned PoE and BiXRec end within 0.2 NDCG points of each other, so BiXRec's lead under the unmasked
 protocol partly comes from ranking already-watched movies lower. Fusion studies should report both protocols.
 
@@ -339,15 +347,15 @@ baselines must be trained with the same objective.
 
 \textbf{What the evidence supports.} Per-user routing between frozen ID and content experts has a small ceiling and,
 when the content expert is weak, a base rate far below break-even. Fusion inside the representations helps when
-item content is informative (MovieLens-100K) and BiXRec is consistently better than SASRec and than an equally
-trained late-fusion control on Beauty; it is not better than early fusion when content is a few attribute tags.
-On Beauty, where the test has power, the gain over late fusion comes from cross-attention, and the
+item content is informative (MovieLens-100K). With attribute tags (Beauty, Sports) BiXRec is consistently better
+than an equally trained late-fusion control, but it is not better than early fusion, and on Sports not better than
+SASRec. On Beauty, where the ablation has power, the gain over late fusion comes from cross-attention, and the
 disagreement penalty helps only on top of it; on MovieLens-100K no single component is significant, and part of the
 gain disappears when watched items are masked.
 
 \textbf{Limitations.} (i)~Compute: all runs used a 2-core CPU, which limited us to three seeds, at most 100 epochs
 and compact models with one shared hyper-parameter setting; tuning each model separately could change close
-comparisons. (ii)~Content: we use a frozen TF-IDF/LSA encoder; Beauty content is anonymised attribute identifiers,
+comparisons. (ii)~Content: we use a frozen TF-IDF/LSA encoder; Amazon content is anonymised attribute identifiers,
 not product text, and MovieLens-100K is small. Pre-trained sentence encoders, product titles and larger datasets
 such as MovieLens-1M are the natural next step, and the released code supports them unchanged. (iii)~The bound in
 Sec.~\ref{sec:bound} applies to per-user selection between two finished rankings; it says nothing about learned
@@ -359,11 +367,12 @@ compared.
 
 \section{Conclusion}
 Choosing, per user, between an ID expert and a content expert has little room to help, and the room shrinks as the
-content expert weakens. Letting the two experts exchange information inside a dual-stream transformer is more
-promising: BiXRec improves on SASRec and on an equally trained late-fusion control, the improvement over late
-fusion comes from cross-attention, and BiXRec wins on MovieLens-100K, but
-it is beaten by simple early fusion when item content is sparse. The largest effect we measured is not a fusion
-design at all but the training objective, which must be held fixed for fusion comparisons to mean anything.
+content expert weakens. Inside a dual-stream transformer, letting the streams exchange information through
+cross-attention is consistently better than keeping them apart until the score, and this is what BiXRec adds. Whether
+a second stream is worth having at all depends on the content: with titles and genres BiXRec is the best model we
+tested, but with a few attribute tags simple early fusion wins on both datasets and BiXRec is at best a little better
+than SASRec. The largest effect we measured is not a fusion design but the training objective, which must be held
+fixed for fusion comparisons to mean anything.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}

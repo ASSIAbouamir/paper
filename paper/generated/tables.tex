@@ -53,44 +53,44 @@
 \newcommand{\gainBeautyHybrid}{-3.7}
 \newcommand{\gainBeautySasrec}{+3.2}
 \newcommand{\gainBeautyLate}{+4.0}
-\newcommand{\resSportsSasrecNdcg}{--}
-\newcommand{\resSportsSasrecHr}{--}
-\newcommand{\resSportsPoeNdcg}{--}
-\newcommand{\resSportsPoeHr}{--}
-\newcommand{\resSportsPoeFiftyNdcg}{--}
-\newcommand{\resSportsPoeFiftyHr}{--}
-\newcommand{\resSportsHybridNdcg}{--}
-\newcommand{\resSportsHybridHr}{--}
-\newcommand{\resSportsLateNdcg}{--}
-\newcommand{\resSportsLateHr}{--}
-\newcommand{\resSportsBixNdcg}{--}
-\newcommand{\resSportsBixHr}{--}
-\newcommand{\resSportsTextNdcg}{--}
-\newcommand{\resSportsTextHr}{--}
-\newcommand{\gainSportsPoe}{--}
-\newcommand{\gainSportsHybrid}{--}
-\newcommand{\gainSportsSasrec}{--}
-\newcommand{\gainSportsLate}{--}
+\newcommand{\resSportsSasrecNdcg}{2.05}
+\newcommand{\resSportsSasrecHr}{4.27}
+\newcommand{\resSportsPoeNdcg}{2.12}
+\newcommand{\resSportsPoeHr}{4.44}
+\newcommand{\resSportsPoeFiftyNdcg}{2.05}
+\newcommand{\resSportsPoeFiftyHr}{4.30}
+\newcommand{\resSportsHybridNdcg}{2.21}
+\newcommand{\resSportsHybridHr}{4.67}
+\newcommand{\resSportsLateNdcg}{1.94}
+\newcommand{\resSportsLateHr}{4.08}
+\newcommand{\resSportsBixNdcg}{2.03}
+\newcommand{\resSportsBixHr}{4.22}
+\newcommand{\resSportsTextNdcg}{0.48}
+\newcommand{\resSportsTextHr}{0.91}
+\newcommand{\gainSportsPoe}{-4.5}
+\newcommand{\gainSportsHybrid}{-8.4}
+\newcommand{\gainSportsSasrec}{-1.3}
+\newcommand{\gainSportsLate}{+4.6}
 \newcommand{\tabMain}{
 \begin{table*}[t]
 \centering
 \caption{Full-catalog leave-one-out results (no negative sampling), mean\,$\pm$\,sd over seeds, in \%. Best per column in bold.}
 \label{tab:main}
 \small
-\begin{tabular}{lcccc}
+\begin{tabular}{lcccccc}
 \toprule
- & \multicolumn{2}{c}{ML-100K} & \multicolumn{2}{c}{Beauty} \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-5}
-Model & HR@10 & NDCG@10 & HR@10 & NDCG@10 \\
+ & \multicolumn{2}{c}{ML-100K} & \multicolumn{2}{c}{Beauty} & \multicolumn{2}{c}{Sports} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+Model & HR@10 & NDCG@10 & HR@10 & NDCG@10 & HR@10 & NDCG@10 \\
 \midrule
-SASRec (ID) & 8.98\,$\pm$\,0.54 & 4.03\,$\pm$\,0.11 & 7.33\,$\pm$\,0.18 & 3.56\,$\pm$\,0.07 \\
-Content expert & 8.73\,$\pm$\,0.68 & 4.21\,$\pm$\,0.38 & 1.73\,$\pm$\,0.05 & 0.81\,$\pm$\,0.01 \\
-Static PoE ($\alpha{=}0.5$) & 9.72\,$\pm$\,0.37 & 4.43\,$\pm$\,0.15 & 7.34\,$\pm$\,0.16 & 3.47\,$\pm$\,0.07 \\
-Tuned PoE ($\alpha$ on val.) & 9.30\,$\pm$\,0.50 & 4.42\,$\pm$\,0.06 & 7.53\,$\pm$\,0.25 & 3.63\,$\pm$\,0.10 \\
-Early fusion (ID + text) & 9.90\,$\pm$\,0.49 & 4.20\,$\pm$\,0.21 & \textbf{7.90\,$\pm$\,0.08} & \textbf{3.82\,$\pm$\,0.02} \\
-Joint late fusion & 10.32\,$\pm$\,0.85 & 4.53\,$\pm$\,0.48 & 7.33\,$\pm$\,0.14 & 3.54\,$\pm$\,0.06 \\
+SASRec (ID) & 8.98\,$\pm$\,0.54 & 4.03\,$\pm$\,0.11 & 7.33\,$\pm$\,0.18 & 3.56\,$\pm$\,0.07 & 4.27\,$\pm$\,0.07 & 2.05\,$\pm$\,0.02 \\
+Content expert & 8.73\,$\pm$\,0.68 & 4.21\,$\pm$\,0.38 & 1.73\,$\pm$\,0.05 & 0.81\,$\pm$\,0.01 & 0.91\,$\pm$\,0.02 & 0.48\,$\pm$\,0.01 \\
+Static PoE ($\alpha{=}0.5$) & 9.72\,$\pm$\,0.37 & 4.43\,$\pm$\,0.15 & 7.34\,$\pm$\,0.16 & 3.47\,$\pm$\,0.07 & 4.30\,$\pm$\,0.05 & 2.05\,$\pm$\,0.02 \\
+Tuned PoE ($\alpha$ on val.) & 9.30\,$\pm$\,0.50 & 4.42\,$\pm$\,0.06 & 7.53\,$\pm$\,0.25 & 3.63\,$\pm$\,0.10 & 4.44\,$\pm$\,0.07 & 2.12\,$\pm$\,0.04 \\
+Early fusion (ID + text) & 9.90\,$\pm$\,0.49 & 4.20\,$\pm$\,0.21 & \textbf{7.90\,$\pm$\,0.08} & \textbf{3.82\,$\pm$\,0.02} & \textbf{4.67\,$\pm$\,0.04} & \textbf{2.21\,$\pm$\,0.01} \\
+Joint late fusion & 10.32\,$\pm$\,0.85 & 4.53\,$\pm$\,0.48 & 7.33\,$\pm$\,0.14 & 3.54\,$\pm$\,0.06 & 4.08\,$\pm$\,0.06 & 1.94\,$\pm$\,0.04 \\
 \midrule
-BiXRec (full) & \textbf{10.64\,$\pm$\,1.52} & \textbf{4.81\,$\pm$\,0.64} & 7.51\,$\pm$\,0.10 & 3.68\,$\pm$\,0.07 \\
+BiXRec (full) & \textbf{10.64\,$\pm$\,1.52} & \textbf{4.81\,$\pm$\,0.64} & 7.51\,$\pm$\,0.10 & 3.68\,$\pm$\,0.07 & 4.22\,$\pm$\,0.04 & 2.03\,$\pm$\,0.03 \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -105,18 +105,24 @@ BiXRec (full) & \textbf{10.64\,$\pm$\,1.52} & \textbf{4.81\,$\pm$\,0.64} & 7.51\
 \toprule
 Data & Baseline & $\Delta$NDCG & Wins & $p_\mathrm{Holm}$ & $\max p_\mathrm{McN}$ \\
 \midrule
-ML-100K & SASRec (ID) & +19.4\% & 3/3 & 3.0e-02 & 9.0e-01 \\
-ML-100K & Content expert & +14.2\% & 3/3 & 3.3e-01 & 3.6e-01 \\
-ML-100K & Static PoE ($\alpha{=}0.5$) & +8.4\% & 2/3 & 3.3e-01 & 4.0e-01 \\
-ML-100K & Tuned PoE ($\alpha$ on val.) & +8.9\% & 2/3 & 3.3e-01 & 1.0e+00 \\
-ML-100K & Early fusion (ID + text) & +14.6\% & 3/3 & 3.5e-02 & 6.9e-01 \\
-ML-100K & Joint late fusion & +6.1\% & 3/3 & 3.3e-01 & 1.0e+00 \\
-Beauty & SASRec (ID) & +3.2\% & 3/3 & 1.9e-03 & 8.2e-01 \\
-Beauty & Content expert & +354.5\% & 3/3 & 1.9e-225 & 1.1e-220 \\
-Beauty & Static PoE ($\alpha{=}0.5$) & +6.2\% & 3/3 & 3.0e-02 & 7.7e-01 \\
-Beauty & Tuned PoE ($\alpha$ on val.) & +1.4\% & 2/3 & 2.6e-01 & 5.6e-01 \\
-Beauty & Early fusion (ID + text) & -3.7\% & 0/3 & 3.0e-02 & 3.4e-03 \\
-Beauty & Joint late fusion & +4.0\% & 3/3 & 2.1e-04 & 7.8e-01 \\
+ML-100K & SASRec (ID) & +19.4\% & 3/3 & 3.7e-02 & 9.0e-01 \\
+ML-100K & Content expert & +14.2\% & 3/3 & 4.9e-01 & 3.6e-01 \\
+ML-100K & Static PoE ($\alpha{=}0.5$) & +8.4\% & 2/3 & 6.2e-01 & 4.0e-01 \\
+ML-100K & Tuned PoE ($\alpha$ on val.) & +8.9\% & 2/3 & 5.3e-01 & 1.0e+00 \\
+ML-100K & Early fusion (ID + text) & +14.6\% & 3/3 & 4.7e-02 & 6.9e-01 \\
+ML-100K & Joint late fusion & +6.1\% & 3/3 & 6.2e-01 & 1.0e+00 \\
+Beauty & SASRec (ID) & +3.2\% & 3/3 & 2.6e-03 & 8.2e-01 \\
+Beauty & Content expert & +354.5\% & 3/3 & 2.9e-225 & 1.1e-220 \\
+Beauty & Static PoE ($\alpha{=}0.5$) & +6.2\% & 3/3 & 3.7e-02 & 7.7e-01 \\
+Beauty & Tuned PoE ($\alpha$ on val.) & +1.4\% & 2/3 & 3.7e-01 & 5.6e-01 \\
+Beauty & Early fusion (ID + text) & -3.7\% & 0/3 & 3.7e-02 & 3.4e-03 \\
+Beauty & Joint late fusion & +4.0\% & 3/3 & 2.9e-04 & 7.8e-01 \\
+Sports & SASRec (ID) & -1.3\% & 1/3 & 1.0e+00 & 1.0e+00 \\
+Sports & Content expert & +321.2\% & 3/3 & 1.2e-204 & 6.9e-201 \\
+Sports & Static PoE ($\alpha{=}0.5$) & -1.0\% & 1/3 & 1.0e+00 & 9.5e-01 \\
+Sports & Tuned PoE ($\alpha$ on val.) & -4.5\% & 0/3 & 1.3e-02 & 1.7e-01 \\
+Sports & Early fusion (ID + text) & -8.4\% & 0/3 & 7.9e-09 & 2.3e-05 \\
+Sports & Joint late fusion & +4.6\% & 3/3 & 3.4e-03 & 6.1e-01 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -127,16 +133,16 @@ Beauty & Joint late fusion & +4.0\% & 3/3 & 2.1e-04 & 7.8e-01 \\
 \caption{Ablation (NDCG@10, \%, mean\,$\pm$\,sd). Static PoE fuses two separately trained experts; all other rows are trained end to end with the same loss and budget.}
 \label{tab:ablation}
 \small
-\resizebox{\ifdim\width>\columnwidth\columnwidth\else\width\fi}{!}{\begin{tabular}{lcc}
+\resizebox{\ifdim\width>\columnwidth\columnwidth\else\width\fi}{!}{\begin{tabular}{lccc}
 \toprule
-Variant & ML-100K & Beauty \\
+Variant & ML-100K & Beauty & Sports \\
 \midrule
-Static PoE ($\alpha{=}0.5$) & 4.43\,$\pm$\,0.15 & 3.47\,$\pm$\,0.07 \\
-Joint late fusion & 4.53\,$\pm$\,0.48 & 3.54\,$\pm$\,0.06 \\
-Joint late fusion + penalty & 4.67\,$\pm$\,0.73 & 3.57\,$\pm$\,0.08 \\
-+ cross-attention & 4.53\,$\pm$\,0.58 & 3.65\,$\pm$\,0.02 \\
-+ cross-attention + gate & 4.43\,$\pm$\,0.50 & 3.62\,$\pm$\,0.04 \\
-BiXRec (full) & 4.81\,$\pm$\,0.64 & 3.68\,$\pm$\,0.07 \\
+Static PoE ($\alpha{=}0.5$) & 4.43\,$\pm$\,0.15 & 3.47\,$\pm$\,0.07 & 2.05\,$\pm$\,0.02 \\
+Joint late fusion & 4.53\,$\pm$\,0.48 & 3.54\,$\pm$\,0.06 & 1.94\,$\pm$\,0.04 \\
+Joint late fusion + penalty & 4.67\,$\pm$\,0.73 & 3.57\,$\pm$\,0.08 & -- \\
++ cross-attention & 4.53\,$\pm$\,0.58 & 3.65\,$\pm$\,0.02 & -- \\
++ cross-attention + gate & 4.43\,$\pm$\,0.50 & 3.62\,$\pm$\,0.04 & -- \\
+BiXRec (full) & 4.81\,$\pm$\,0.64 & 3.68\,$\pm$\,0.07 & 2.03\,$\pm$\,0.03 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -147,15 +153,15 @@ BiXRec (full) & 4.81\,$\pm$\,0.64 & 3.68\,$\pm$\,0.07 \\
 \caption{Training-protocol audit (NDCG@10, \%). ``Last position only'' and ``BCE + 1 negative'' reproduce the training choices of our earlier pipeline.}
 \label{tab:audit}
 \small
-\resizebox{\ifdim\width>\columnwidth\columnwidth\else\width\fi}{!}{\begin{tabular}{lcc}
+\resizebox{\ifdim\width>\columnwidth\columnwidth\else\width\fi}{!}{\begin{tabular}{lccc}
 \toprule
-Variant & ML-100K & Beauty \\
+Variant & ML-100K & Beauty & Sports \\
 \midrule
-SASRec, last position only & 1.02\,$\pm$\,0.37 & -- \\
-SASRec, BCE + 1 negative & 3.01\,$\pm$\,0.15 & -- \\
-SASRec (ID) & 4.03\,$\pm$\,0.11 & 3.56\,$\pm$\,0.07 \\
-BiXRec, last position only & 1.83\,$\pm$\,0.05 & -- \\
-BiXRec (full) & 4.81\,$\pm$\,0.64 & 3.68\,$\pm$\,0.07 \\
+SASRec, last position only & 1.02\,$\pm$\,0.37 & -- & -- \\
+SASRec, BCE + 1 negative & 3.01\,$\pm$\,0.15 & -- & -- \\
+SASRec (ID) & 4.03\,$\pm$\,0.11 & 3.56\,$\pm$\,0.07 & 2.05\,$\pm$\,0.02 \\
+BiXRec, last position only & 1.83\,$\pm$\,0.05 & -- & -- \\
+BiXRec (full) & 4.81\,$\pm$\,0.64 & 3.68\,$\pm$\,0.07 & 2.03\,$\pm$\,0.03 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -166,15 +172,15 @@ BiXRec (full) & 4.81\,$\pm$\,0.64 & 3.68\,$\pm$\,0.07 \\
 \caption{Effect of removing history items from the ranking (NDCG@10, \%). Because repeated user--item pairs are removed, the target is never in the history and masking can only help.}
 \label{tab:mask}
 \small
-\begin{tabular}{lcccc}
+\begin{tabular}{lcccccc}
 \toprule
- & \multicolumn{2}{c}{ML-100K} & \multicolumn{2}{c}{Beauty} \\
-Model & unmasked & masked & unmasked & masked \\
+ & \multicolumn{2}{c}{ML-100K} & \multicolumn{2}{c}{Beauty} & \multicolumn{2}{c}{Sports} \\
+Model & unmasked & masked & unmasked & masked & unmasked & masked \\
 \midrule
-SASRec (ID) & 4.03\,$\pm$\,0.11 & 7.24\,$\pm$\,0.25 & 3.56\,$\pm$\,0.07 & 4.84\,$\pm$\,0.12 \\
-Tuned PoE ($\alpha$ on val.) & 4.42\,$\pm$\,0.06 & 8.15\,$\pm$\,0.53 & 3.63\,$\pm$\,0.10 & 4.97\,$\pm$\,0.13 \\
-Early fusion (ID + text) & 4.20\,$\pm$\,0.21 & 7.68\,$\pm$\,0.07 & 3.82\,$\pm$\,0.02 & 5.18\,$\pm$\,0.04 \\
-BiXRec (full) & 4.81\,$\pm$\,0.64 & 8.13\,$\pm$\,0.80 & 3.68\,$\pm$\,0.07 & 4.97\,$\pm$\,0.06 \\
+SASRec (ID) & 4.03\,$\pm$\,0.11 & 7.24\,$\pm$\,0.25 & 3.56\,$\pm$\,0.07 & 4.84\,$\pm$\,0.12 & 2.05\,$\pm$\,0.02 & 2.72\,$\pm$\,0.03 \\
+Tuned PoE ($\alpha$ on val.) & 4.42\,$\pm$\,0.06 & 8.15\,$\pm$\,0.53 & 3.63\,$\pm$\,0.10 & 4.97\,$\pm$\,0.13 & 2.12\,$\pm$\,0.04 & 2.83\,$\pm$\,0.04 \\
+Early fusion (ID + text) & 4.20\,$\pm$\,0.21 & 7.68\,$\pm$\,0.07 & 3.82\,$\pm$\,0.02 & 5.18\,$\pm$\,0.04 & 2.21\,$\pm$\,0.01 & 2.98\,$\pm$\,0.02 \\
+BiXRec (full) & 4.81\,$\pm$\,0.64 & 8.13\,$\pm$\,0.80 & 3.68\,$\pm$\,0.07 & 4.97\,$\pm$\,0.06 & 2.03\,$\pm$\,0.03 & 2.67\,$\pm$\,0.03 \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -195,6 +201,9 @@ ML-100K & long ($>$112) & 2.10 & 3.22 & 2.36 & 3.05 \\
 Beauty & short ($\le$5) & 3.41 & 3.51 & 3.54 & 3.50 \\
 Beauty & medium (6--7) & 3.18 & 3.31 & 3.45 & 3.30 \\
 Beauty & long ($>$7) & 4.11 & 4.04 & 4.56 & 4.26 \\
+Sports & short ($\le$5) & 2.15 & 2.24 & 2.38 & 2.16 \\
+Sports & medium (6--7) & 2.09 & 2.21 & 2.16 & 1.94 \\
+Sports & long ($>$7) & 1.84 & 1.85 & 1.94 & 1.84 \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -211,6 +220,7 @@ Data & Users & $n_{11}$ & $n_{10}$ & $n_{01}$ & Base rate & BiXRec $-$ C \\
 \midrule
 ML-100K & 943 & 34.7 & 50.0 & 47.7 & 48.8\% & +15.7 \\
 Beauty & 22363 & 153.0 & 1486.0 & 233.7 & 13.6\% & +39.7 \\
+Sports & 35598 & 84.3 & 1434.0 & 238.7 & 14.3\% & -15.0 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -227,6 +237,7 @@ Data & Users & Items & Inter. & Avg.\ len. & Density \\
 \midrule
 ML-100K & 943 & 1,349 & 99,287 & 105.3 & 7.805\% \\
 Beauty & 22,363 & 12,101 & 198,502 & 8.9 & 0.073\% \\
+Sports & 35,598 & 18,357 & 296,337 & 8.3 & 0.045\% \\
 \bottomrule
 \end{tabular}}
 \end{table}
