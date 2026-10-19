@@ -30,7 +30,7 @@ from typing import Dict, List
 
 from .train import build_parser, pick_device
 
-SEEDS = [42, 123, 2024, 7, 99]
+SEEDS = [42, 123, 2024]  # fixed before any v4 run (PR #3 decision, 2026-10-20)
 STAGES = {
     "core": (["sasrec", "text", "hybrid", "dual_late", "bix", "dual_late_aux", "bix_aux", "dual_late_ef_aux",
               "bix_ef_aux", "poe"], SEEDS, None),

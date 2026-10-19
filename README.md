@@ -46,8 +46,8 @@ Rules, fixed before any v4 run:
    refuses a variant that is missing from the tuned table. Model-specific settings (aux weight 0.5, learnable
    fusion weight) are fixed, never tuned. Ties go to the earlier option in each list. (PoE's α is a fusion weight
    picked on validation from 21 values; this favours PoE's validation score, not its test score.)
-3. **Fixed seeds, everything reported.** The seed set ({42, 123, 2024, 7, 99} or its first three) is fixed before
-   the first v4 run and stated in the v4 pull request; all runs of all variants appear in the tables (cells with
+3. **Fixed seeds, everything reported.** Seeds {42, 123, 2024}, fixed before the first v4 run (decision
+   recorded in the v4 pull request, together with d ∈ {64, 128, 256} and both real-text datasets); all runs of all variants appear in the tables (cells with
    fewer seeds are marked); `make_tables` selects a model only once every main-table model exists on every dataset,
    from validation scores only, and records any `--exclude` in `summary.json`.
 4. **No leakage.** Content encoders are fitted on item text/attributes only; Amazon metadata fields that encode
