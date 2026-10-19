@@ -315,6 +315,21 @@ def test_mps_matches_cpu():
             assert torch.allclose(hc[k], hm[k].cpu(), atol=1e-4), (kind, kw)
 
 
+@pytest.mark.skipif(not torch.backends.mps.is_available(), reason="no Apple GPU")
+def test_mps_training_step_matches_cpu():
+    """One training epoch on MPS (with cache freeing) gives the same weights as on CPU, within float tolerance."""
+    from bixrec.train import train_model
+    seqs = [[(u + i) % 50 + 1 for i in range(8)] for u in range(60)]
+    train, val, _ = make_splits(seqs, 10)
+    cfg = dict(lr=1e-2, wd=0.0, seed=0, epochs=1, batch=8, patience=5, min_epochs=0, verbose=False)
+    w = {}
+    for dev in ("cpu", "mps"):
+        m = _model("dual", cross=True, gate=True, penalty=True, ef=True).to(dev)
+        train_model(m, train, val, torch.device(dev), dict(cfg, aux=0.5))
+        w[dev] = m.item_emb.weight.detach().cpu()
+    assert torch.allclose(w["cpu"], w["mps"], atol=1e-4)
+
+
 @pytest.mark.skipif(not os.environ.get("V3_RUNS"), reason="set V3_RUNS=<v3 runs dir> and V3_DATA=<v3 data dir>")
 def test_v3_replay():
     """v3 checkpoints reproduce their saved validation ranks with v4 code (numerical equivalence)."""

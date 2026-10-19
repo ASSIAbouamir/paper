@@ -65,6 +65,7 @@ DATASET_DEFAULTS = {
     "default": dict(max_len=50, dropout=0.5),
 }
 DEFAULT_D, DEFAULT_LR = 64, 1e-3
+MPS_FREE_EVERY = 25  # steps; batch shapes vary, and the MPS allocator otherwise keeps every freed block
 TIE_SEED = 0
 # settings that must not change between a checkpoint and its resumed run
 RESUME_KEYS = ("d", "lr", "dropout", "max_len", "emb", "aux", "loss", "positions", "batch", "wd", "layers", "heads",
@@ -151,6 +152,13 @@ def ranks_of(scores: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     return torch.where(torch.isfinite(st[:, 0]), r, torch.full_like(r, scores.shape[1]))
 
 
+def free_cache(dev):
+    """Return cached, unused device memory (memory management only; no effect on any computed value).
+    Without it, the many batch shapes leave the MPS allocator holding ~18 GB of freed blocks."""
+    if dev.type == "mps":
+        torch.mps.empty_cache()
+
+
 @torch.no_grad()
 def score_batches(model: SeqRec, seqs: torch.Tensor, dev, bs: int = 256, head: str = None):
     """Yields (row indices, batch_seq, final-position scores (B, N+1)) in length-sorted order.
@@ -178,6 +186,7 @@ def evaluate(model, split, dev, masked: bool = False, head: str = None) -> np.nd
         if masked:
             sc = sc.scatter(1, b, float("-inf"))
         out[idx] = ranks_of(sc, tgt[idx].to(dev)).cpu()
+    free_cache(dev)
     return out.numpy().astype(np.int32)
 
 
@@ -256,6 +265,8 @@ def train_model(model: SeqRec, train, val, dev, cfg) -> Tuple[dict, int, float, 
             opt.step()
             tot += loss.item()
             nb += 1
+            if nb % MPS_FREE_EVERY == 0:
+                free_cache(dev)
         peak = max(peak, mem_gb(dev))
         m = summarize(evaluate(model, val, dev))
         if m["NDCG@10"] > best:
