@@ -73,14 +73,23 @@ def test_stats():
 
 
 def test_aux_stream_logits():
-    """streams=True leaves the fused score unchanged and the per-stream CE trains."""
+    """streams=True returns the unchanged fused score plus the per-stream scores."""
     m = _model("dual", cross=True, gate=True, penalty=True).eval()
     t = m.item_tables()
     h = {k: v[:, -1] for k, v in m.encode(torch.tensor([[0, 0, 0, 0, 0, 0, 0, 5, 6, 7]]), t).items()}
     out, sc, ss = m.logits(h, t, streams=True)
     assert torch.equal(out, m.logits(h, t)) and sc.shape == ss.shape == out.shape
-    y = torch.tensor([8])
-    loss = torch.nn.functional.cross_entropy(out, y) + 0.5 * (
-        torch.nn.functional.cross_entropy(sc[:, 1:], y - 1) + torch.nn.functional.cross_entropy(ss[:, 1:], y - 1))
-    loss.backward()
-    assert torch.isfinite(loss) and m.item_emb.weight.grad is not None
+
+
+def test_aux_loss_changes_training():
+    """The aux branch of train_model is live: same seed and data, aux off vs on -> different weights."""
+    from bixrec.train import VARIANTS, train_model
+    seqs = [[(u + i) % 50 + 1 for i in range(8)] for u in range(20)]
+    train, val, _ = make_splits(seqs, 10)
+    cfg = dict(lr=1e-2, wd=0.0, seed=0, epochs=1, batch=8, patience=5, min_epochs=0, verbose=False)
+    weights = []
+    for aux in (0.0, VARIANTS["bix_aux"]["aux"]):
+        m = _model("dual", cross=True, gate=True, penalty=True)
+        train_model(m, train, val, torch.device("cpu"), dict(cfg, aux=aux))
+        weights.append(m.text.proj[0].weight.detach().clone())
+    assert not torch.equal(*weights)
