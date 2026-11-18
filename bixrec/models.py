@@ -13,10 +13,13 @@ Dual-stream model (two transformers, one per modality) with switches:
     cross   : bilateral cross-attention between the streams at every layer
     gate    : sigmoid injection gate on the cross-attention output
     penalty : candidate-level discrepancy penalty  - lambda * |s_c - s_s|
+    ef      : the content stream uses early-fused item vectors (ID + projected text) instead of
+              text only, so it can tell apart items with identical content (v4)
 With cross=False the dual model is a *jointly trained late fusion* control: the
 two streams never exchange information before scoring, but are trained end to
 end through the fused score. Comparing it with cross=True isolates the effect of
-cross-attention from the effect of joint training.
+cross-attention from the effect of joint training. The per-stream auxiliary loss
+(variants *_aux) is a training-objective option set in train.py, not here.
 """
 
 import math
@@ -112,11 +115,13 @@ class TextProjector(nn.Module):
 class SeqRec(nn.Module):
     def __init__(self, num_items: int, kind: str, text_emb: Optional[torch.Tensor] = None,
                  d: int = 64, layers: int = 2, heads: int = 2, max_len: int = 200, dropout: float = 0.2,
-                 cross: bool = False, gate: bool = False, penalty: bool = False, lambda_max: float = 0.35):
+                 cross: bool = False, gate: bool = False, penalty: bool = False, lambda_max: float = 0.35,
+                 ef: bool = False):
         super().__init__()
         assert kind in {"id", "text", "hybrid", "dual"}
+        assert not ef or kind == "dual", "ef applies to the dual model only"
         self.kind, self.num_items, self.d, self.heads, self.max_len = kind, num_items, d, heads, max_len
-        self.cross, self.gate, self.penalty, self.lambda_max = cross, gate, penalty, lambda_max
+        self.cross, self.gate, self.penalty, self.lambda_max, self.ef = cross, gate, penalty, lambda_max, ef
         needs_id = kind in {"id", "hybrid", "dual"}
         needs_text = kind in {"text", "hybrid", "dual"}
         if needs_text and text_emb is None:
@@ -148,7 +153,8 @@ class SeqRec(nn.Module):
             return {"x": self.text()}
         if self.kind == "hybrid":
             return {"x": self.item_emb.weight + self.text()}
-        return {"c": self.item_emb.weight, "s": self.text()}
+        s = self.item_emb.weight + self.text() if self.ef else self.text()
+        return {"c": self.item_emb.weight, "s": s}
 
     def _embed(self, seq, table, pos_table):
         T = seq.shape[1]
@@ -186,7 +192,9 @@ class SeqRec(nn.Module):
             sc = h["c"] @ tables["c"].T
             ss = h["s"] @ tables["s"].T
             w, lam = self.fusion_params()
-            out = w * sc + (1 - w) * ss - lam * (sc - ss).abs()
+            out = w * sc + (1 - w) * ss
+            if self.penalty:  # lambda is exactly 0 otherwise; skip three (M, N+1) temporaries
+                out = out - lam * (sc - ss).abs()
         else:
             out = h["x"] @ tables["x"].T
         out[:, 0] = float("-inf")

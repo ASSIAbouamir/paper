@@ -57,3 +57,8 @@ paper/*.out
 paper/*.fdb_latexmk
 paper/*.fls
 __pycache__/
+
+# v4
+data_v4/
+runs_v4/
+runs_tune/

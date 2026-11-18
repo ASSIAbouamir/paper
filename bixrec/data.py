@@ -22,6 +22,7 @@ Usage:
     python -m bixrec.data txt    --raw ml-1m.txt --out data/ml1m_txt   (no text, sanity checks only)
     python -m bixrec.data recbole --raw ml-100k.inter --meta ml-100k.item --out data/ml100k
     python -m bixrec.data s3rec  --raw Beauty.txt --meta Beauty_item2attributes.json --out data/beauty_attr
+    python -m bixrec.data compare --raw data/beauty --meta data/beauty_text   (same interactions? -> 1.0)
 """
 
 import argparse
@@ -151,12 +152,18 @@ def read_amazon(reviews_path: str, meta_path: str):
                 if d is None:
                     continue
                 it = d.get("asin") or d.get("parent_asin")
+                # only descriptive fields: title, brand, categories (+ description if no title). Never
+                # 'related' / also_bought / also_viewed / salesRank, which encode other users' interactions.
                 title = str(d.get("title", "") or "").strip()
                 brand = str(d.get("brand", "") or d.get("store", "") or "").strip()
                 cats = d.get("categories") or d.get("category") or []
-                if cats and isinstance(cats[0], list):
-                    cats = cats[0]
-                cats = ", ".join(str(c) for c in cats[1:] if c) if len(cats) > 1 else ", ".join(map(str, cats))
+                paths = cats if cats and isinstance(cats[0], list) else [cats]
+                names = []  # every category path, minus each path's root (e.g. "Beauty"), deduplicated
+                for p in paths:
+                    for c in (p[1:] if len(p) > 1 else p):
+                        if c and str(c) not in names:
+                            names.append(str(c))
+                cats = ", ".join(names)
                 parts = []
                 if title:
                     parts.append(f"Title: {title}.")
@@ -244,14 +251,33 @@ def read_s3rec(txt_path: str, attr_path: str):
     return rows, text
 
 
+def same_interactions(a: dict, b: dict) -> float:
+    """Fraction of users whose sequence in dataset b matches one in dataset a, up to item relabelling.
+    Each sequence is described by the global popularity of its items, in order (ids differ between
+    releases); 1.0 means both datasets have the same users, sequences, orders and leave-one-out targets."""
+    def signatures(ds):
+        pop = Counter(i for s in ds["user_seqs"] for i in s)
+        return Counter(tuple(pop[i] for i in s) for s in ds["user_seqs"])
+    sa, sb = signatures(a), signatures(b)
+    return sum((sa & sb).values()) / max(sum(sb.values()), 1)
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("kind", choices=["ml1m", "amazon", "csv", "txt", "recbole", "s3rec"])
-    ap.add_argument("--raw", required=True)
-    ap.add_argument("--meta", default="")
-    ap.add_argument("--out", required=True)
+    ap.add_argument("kind", choices=["ml1m", "amazon", "csv", "txt", "recbole", "s3rec", "compare"])
+    ap.add_argument("--raw", required=True, help="raw file/dir (compare: first prepared data dir)")
+    ap.add_argument("--meta", default="", help="item text file (compare: second prepared data dir)")
+    ap.add_argument("--out", default="")
     ap.add_argument("--k", type=int, default=5)
     a = ap.parse_args()
+    if a.kind == "compare":
+        load = lambda d: torch.load(os.path.join(d, "dataset.pt"), weights_only=False)
+        da, db = load(a.raw), load(a.meta)
+        print(json.dumps({"a": da["stats"], "b": db["stats"], "same_interactions": same_interactions(da, db)},
+                         indent=1))
+        return
+    if not a.out:
+        ap.error("--out is required")
     if a.kind == "ml1m":
         rows, text = read_ml1m(a.raw)
     elif a.kind == "amazon":
